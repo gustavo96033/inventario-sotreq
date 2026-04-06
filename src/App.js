@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const STORAGE_KEYS = {
-  materials: "inventario_materials_v8",
-  inventories: "inventario_inventories_v8",
-  currentInventory: "inventario_current_v8",
-  auth: "inventario_auth_v8",
-  movements: "inventario_movements_v8",
+  materials: "inventario_materials_v9",
+  inventories: "inventario_inventories_v9",
+  currentInventory: "inventario_current_v9",
+  auth: "inventario_auth_v9",
+  movements: "inventario_movements_v9",
 };
 
 const CAT_YELLOW = "#f2c200";
@@ -774,7 +774,7 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
             letterSpacing: 0.3,
           }}
         >
-          ⛏️ MINERAÇÃO • CONTROLE INTERNO
+          SOTREQ CAT • CONTROLE INTERNO
         </div>
 
         <div
@@ -900,9 +900,233 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
                   padding: 14,
                 }}
               >
-                <div style={{ color: "#9ca3af", fontSize: 12 }}>Ambiente</div>
+                <div style={{ color: "#9ca3af", fontSize: 12 }}>Sistema</div>
                 <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
-                  Visual adaptado ao estilo mineração
+                  Visual do sistema
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WelcomeScreen({ onEnter }) {
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(135deg, #111111 0%, #1f2937 50%, #111111 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        fontFamily:
+          'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: 1100,
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 32,
+          overflow: "hidden",
+          boxShadow: "0 25px 60px rgba(0,0,0,0.35)",
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.1fr 0.9fr",
+            minHeight: 620,
+          }}
+        >
+          <div
+            style={{
+              padding: 42,
+              color: "white",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              background:
+                "linear-gradient(160deg, rgba(242,194,0,0.10) 0%, rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.00) 100%)",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: CAT_YELLOW,
+                  color: CAT_BLACK,
+                  borderRadius: 999,
+                  padding: "10px 16px",
+                  fontWeight: 900,
+                  fontSize: 14,
+                }}
+              >
+                SOTREQ CAT
+              </div>
+
+              <h1
+                style={{
+                  margin: "22px 0 14px 0",
+                  fontSize: 48,
+                  lineHeight: 1.05,
+                }}
+              >
+                Controle inteligente
+                <br />
+                de materiais
+              </h1>
+
+              <div
+                style={{
+                  color: "#d1d5db",
+                  fontSize: 18,
+                  lineHeight: 1.7,
+                  maxWidth: 620,
+                }}
+              >
+                Sistema para cadastro, pesquisa, inventário, histórico de ações e
+                movimentação mensal de entrada e saída com identificação por usuário.
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  marginTop: 24,
+                }}
+              >
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    borderRadius: 16,
+                    padding: "12px 16px",
+                    fontWeight: 700,
+                  }}
+                >
+                  📦 Cadastro e pesquisa
+                </div>
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    borderRadius: 16,
+                    padding: "12px 16px",
+                    fontWeight: 700,
+                  }}
+                >
+                  📝 Inventário salvo
+                </div>
+                <div
+                  style={{
+                    background: "rgba(255,255,255,0.08)",
+                    borderRadius: 16,
+                    padding: "12px 16px",
+                    fontWeight: 700,
+                  }}
+                >
+                  🔁 Entrada e saída
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 26 }}>
+              <button
+                onClick={onEnter}
+                style={{
+                  background: CAT_YELLOW,
+                  color: CAT_BLACK,
+                  border: `1px solid ${CAT_YELLOW}`,
+                  borderRadius: 18,
+                  padding: "16px 24px",
+                  fontWeight: 900,
+                  fontSize: 17,
+                  cursor: "pointer",
+                }}
+              >
+                Entrar no sistema
+              </button>
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: 30,
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.08) 100%)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 420,
+                display: "grid",
+                gap: 16,
+              }}
+            >
+              <div
+                style={{
+                  background: "#0f0f0f",
+                  color: "white",
+                  borderRadius: 24,
+                  padding: 22,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <div style={{ color: "#9ca3af", fontSize: 13 }}>Módulo</div>
+                <div style={{ marginTop: 8, fontSize: 24, fontWeight: 900 }}>
+                  Pesquisa de materiais
+                </div>
+                <div style={{ marginTop: 8, color: "#d1d5db" }}>
+                  Busca rápida por PN, descrição, localização e histórico.
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#0f0f0f",
+                  color: "white",
+                  borderRadius: 24,
+                  padding: 22,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <div style={{ color: "#9ca3af", fontSize: 13 }}>Módulo</div>
+                <div style={{ marginTop: 8, fontSize: 24, fontWeight: 900 }}>
+                  Inventário e histórico
+                </div>
+                <div style={{ marginTop: 8, color: "#d1d5db" }}>
+                  Criação de inventários salvos e rastreio por usuário.
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "#0f0f0f",
+                  color: "white",
+                  borderRadius: 24,
+                  padding: 22,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <div style={{ color: "#9ca3af", fontSize: 13 }}>Módulo</div>
+                <div style={{ marginTop: 8, fontSize: 24, fontWeight: 900 }}>
+                  Entrada e saída mensal
+                </div>
+                <div style={{ marginTop: 8, color: "#d1d5db" }}>
+                  Controle de quantidade, fotos e movimentações do mês.
                 </div>
               </div>
             </div>
@@ -946,6 +1170,7 @@ export default function App() {
     readStorage(STORAGE_KEYS.movements, [])
   );
 
+  const [enteredApp, setEnteredApp] = useState(false);
   const [activeTab, setActiveTab] = useState("inicio");
   const [search, setSearch] = useState("");
   const [selectedMaterialPn, setSelectedMaterialPn] = useState("");
@@ -1616,6 +1841,10 @@ export default function App() {
       fontWeight: 800,
       cursor: "pointer",
     };
+  }
+
+  if (!enteredApp) {
+    return <WelcomeScreen onEnter={() => setEnteredApp(true)} />;
   }
 
   return (
