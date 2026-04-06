@@ -18,8 +18,8 @@ const demoMaterials = [];
 const ACCESS_CONFIG = {
   inventario: [
     {
-      matricula: "1111",
-      senha: "1111",
+      matricula: "401711",
+      senha: "Si91077463@",
       nome: "Gustavo",
     },
     {
@@ -30,9 +30,9 @@ const ACCESS_CONFIG = {
   ],
   materiais: [
     {
-      matricula: "1111",
-      senha: "1111",
-      nome: "Gustavo",
+      matricula: "401668",
+      senha: "Ad@301769x",
+      nome: "Alaysson",
     },
     {
       matricula: "2222",
