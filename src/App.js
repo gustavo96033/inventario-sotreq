@@ -18,7 +18,7 @@ const ACCESS_CONFIG = {
   inventario: [
     {
       matricula: "401711",
-      senha: "Si91077463@",
+      senha: "1234",
       nome: "Gustavo",
     },
     {
@@ -30,13 +30,13 @@ const ACCESS_CONFIG = {
   materiais: [
     {
       matricula: "401711",
-      senha: "Si91077463@",
+      senha: "1234",
       nome: "Gustavo",
     },
     {
-      matricula: "401668",
-      senha: "Ad@301769x",
-      nome: "Alaysson",
+      matricula: "3333",
+      senha: "3333",
+      nome: "Auxiliar 1",
     },
     {
       matricula: "4444",
