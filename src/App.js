@@ -18,30 +18,30 @@ const ACCESS_CONFIG = {
   inventario: [
     {
       matricula: "401711",
-      senha: "1234",
+      senha: "Si91077463@",
       nome: "Gustavo",
     },
     {
-      matricula: "2222",
-      senha: "2222",
-      nome: "Líder de equipe",
+      matricula: "401668",
+      senha: "Ad@301769x",
+      nome: "Alaysson",
     },
   ],
   materiais: [
     {
       matricula: "401711",
-      senha: "1234",
+      senha: "Si91077463@",
       nome: "Gustavo",
     },
     {
-      matricula: "3333",
-      senha: "3333",
-      nome: "Auxiliar 1",
+      matricula: "401668",
+      senha: "Ad@301769x",
+      nome: "Alaysson",
     },
     {
-      matricula: "4444",
-      senha: "4444",
-      nome: "Auxiliar 2",
+      matricula: "401667",
+      senha: "12345",
+      nome: "Kaique",
     },
   ],
 };
