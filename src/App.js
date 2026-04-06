@@ -35,9 +35,9 @@ const ACCESS_CONFIG = {
       nome: "Alaysson",
     },
     {
-      matricula: "2222",
-      senha: "2222",
-      nome: "Líder de equipe",
+      matricula: "401711",
+      senha: "Si91077463@",
+      nome: "Gustavo",
     },
     {
       matricula: "3333",
