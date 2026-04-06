@@ -902,7 +902,7 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
               >
                 <div style={{ color: "#9ca3af", fontSize: 12 }}>Sistema</div>
                 <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
-                  Visual do sistema
+                  Gestão inteligente de estoque
                 </div>
               </div>
             </div>
