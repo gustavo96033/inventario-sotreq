@@ -222,6 +222,14 @@ function movementTypeStyle(type) {
     return { background: "#fee2e2", color: "#991b1b" };
   }
 
+  if (normalized === "CADASTRO" || normalized === "EDIÇÃO DE CADASTRO") {
+    return { background: "#dbeafe", color: "#1d4ed8" };
+  }
+
+  if (normalized === "IMPORTAÇÃO CSV") {
+    return { background: "#ede9fe", color: "#6d28d9" };
+  }
+
   return { background: "#e5e7eb", color: "#374151" };
 }
 
@@ -668,6 +676,243 @@ function LoginGate({
   );
 }
 
+function StatCard({ title, value, subtitle, icon }) {
+  return (
+    <div
+      style={{
+        background: "linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%)",
+        color: "white",
+        borderRadius: 22,
+        padding: 18,
+        border: "1px solid rgba(255,255,255,0.08)",
+        boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
+      }}
+    >
+      <div style={{ fontSize: 28 }}>{icon}</div>
+      <div style={{ marginTop: 10, fontSize: 13, color: "#d1d5db", fontWeight: 700 }}>
+        {title}
+      </div>
+      <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900 }}>{value}</div>
+      {subtitle ? (
+        <div style={{ marginTop: 6, fontSize: 13, color: "#9ca3af" }}>{subtitle}</div>
+      ) : null}
+    </div>
+  );
+}
+
+function QuickAction({ title, text, buttonText, onClick }) {
+  return (
+    <div
+      style={{
+        background: "white",
+        borderRadius: 24,
+        padding: 20,
+        border: "1px solid #e5e7eb",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+      }}
+    >
+      <div style={{ fontSize: 20, fontWeight: 800 }}>{title}</div>
+      <div style={{ marginTop: 8, color: "#6b7280", lineHeight: 1.5 }}>{text}</div>
+      <div style={{ marginTop: 16 }}>
+        <ActionButton onClick={onClick}>{buttonText}</ActionButton>
+      </div>
+    </div>
+  );
+}
+
+function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLabel }) {
+  return (
+    <div
+      style={{
+        background:
+          "linear-gradient(135deg, #111111 0%, #1f2937 45%, #111111 100%)",
+        borderRadius: 28,
+        padding: 26,
+        color: "white",
+        position: "relative",
+        overflow: "hidden",
+        boxShadow: "0 16px 40px rgba(0,0,0,0.20)",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: -30,
+          right: -30,
+          width: 220,
+          height: 220,
+          borderRadius: "50%",
+          background: "rgba(242,194,0,0.10)",
+          filter: "blur(10px)",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: -50,
+          left: -20,
+          width: 180,
+          height: 180,
+          borderRadius: "50%",
+          background: "rgba(242,194,0,0.08)",
+          filter: "blur(10px)",
+        }}
+      />
+
+      <div style={{ position: "relative", zIndex: 1 }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            background: CAT_YELLOW,
+            color: CAT_BLACK,
+            borderRadius: 999,
+            padding: "10px 14px",
+            fontWeight: 900,
+            fontSize: 13,
+            letterSpacing: 0.3,
+          }}
+        >
+          ⛏️ MINERAÇÃO • CONTROLE INTERNO
+        </div>
+
+        <div
+          style={{
+            marginTop: 18,
+            display: "grid",
+            gridTemplateColumns: "1.2fr 0.8fr",
+            gap: 22,
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <h1 style={{ margin: 0, fontSize: 34, lineHeight: 1.1 }}>
+              Sistema de Controle de Materiais
+            </h1>
+            <div
+              style={{
+                marginTop: 12,
+                color: "#d1d5db",
+                fontSize: 16,
+                maxWidth: 760,
+                lineHeight: 1.6,
+              }}
+            >
+              Cadastro de materiais, inventário, histórico por usuário e controle
+              mensal de entrada e saída com foto, quantidade e rastreabilidade.
+            </div>
+
+            <div
+              style={{
+                marginTop: 18,
+                display: "flex",
+                gap: 10,
+                flexWrap: "wrap",
+              }}
+            >
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  borderRadius: 16,
+                  padding: "10px 14px",
+                  fontWeight: 700,
+                }}
+              >
+                📦 Materiais: {materialsCount}
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  borderRadius: 16,
+                  padding: "10px 14px",
+                  fontWeight: 700,
+                }}
+              >
+                📝 Inventários: {inventoriesCount}
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.08)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  borderRadius: 16,
+                  padding: "10px 14px",
+                  fontWeight: 700,
+                }}
+              >
+                🔁 Movimentações em {monthLabel}: {movementsCount}
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              minHeight: 240,
+              borderRadius: 24,
+              background:
+                "linear-gradient(180deg, rgba(242,194,0,0.14) 0%, rgba(255,255,255,0.02) 100%)",
+              border: "1px solid rgba(255,255,255,0.10)",
+              padding: 20,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ fontSize: 14, color: "#d1d5db", fontWeight: 800 }}>
+              VISÃO RÁPIDA DO MÊS
+            </div>
+
+            <div style={{ display: "grid", gap: 12 }}>
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  borderRadius: 16,
+                  padding: 14,
+                }}
+              >
+                <div style={{ color: "#9ca3af", fontSize: 12 }}>Foco atual</div>
+                <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
+                  Entradas e saídas mensais
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  borderRadius: 16,
+                  padding: 14,
+                }}
+              >
+                <div style={{ color: "#9ca3af", fontSize: 12 }}>Controle</div>
+                <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
+                  Rastreio por usuário + foto
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  borderRadius: 16,
+                  padding: 14,
+                }}
+              >
+                <div style={{ color: "#9ca3af", fontSize: 12 }}>Ambiente</div>
+                <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
+                  Visual adaptado ao estilo mineração
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function exportToCsv(filename, rows) {
   const csvContent = rows.map((row) => row.join(";")).join("\n");
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -701,7 +946,7 @@ export default function App() {
     readStorage(STORAGE_KEYS.movements, [])
   );
 
-  const [activeTab, setActiveTab] = useState("pesquisa");
+  const [activeTab, setActiveTab] = useState("inicio");
   const [search, setSearch] = useState("");
   const [selectedMaterialPn, setSelectedMaterialPn] = useState("");
 
@@ -816,6 +1061,28 @@ export default function App() {
       (item) => getMonthKey(item.data) === movementMonthFilter
     );
   }, [movements, movementMonthFilter]);
+
+  const currentMonthLabel = formatMonthLabel(getMonthKey(new Date()));
+
+  const currentMonthMovements = useMemo(() => {
+    const currentMonth = getMonthKey(new Date());
+    return movements.filter((item) => getMonthKey(item.data) === currentMonth);
+  }, [movements]);
+
+  const currentMonthEntries = useMemo(() => {
+    return currentMonthMovements
+      .filter((item) => String(item.tipo).toUpperCase() === "ENTRADA")
+      .reduce((sum, item) => sum + Number(item.quantidade || 0), 0);
+  }, [currentMonthMovements]);
+
+  const currentMonthOutputs = useMemo(() => {
+    return currentMonthMovements
+      .filter((item) => {
+        const tipo = String(item.tipo).toUpperCase();
+        return tipo === "SAÍDA" || tipo === "SAIDA";
+      })
+      .reduce((sum, item) => sum + Number(item.quantidade || 0), 0);
+  }, [currentMonthMovements]);
 
   function authenticate(area, matricula, senha) {
     const users = ACCESS_CONFIG[area] || [];
@@ -1398,8 +1665,7 @@ export default function App() {
                 Controle de materiais
               </h1>
               <div style={{ color: "#d1d5db" }}>
-                Cadastro, inventário, histórico e movimentação de entrada e
-                saída
+                Cadastro, inventário, histórico e movimentação de entrada e saída
               </div>
             </div>
 
@@ -1455,8 +1721,17 @@ export default function App() {
             flexWrap: "wrap",
             marginTop: 20,
             marginBottom: 20,
+            background: "white",
+            padding: 12,
+            borderRadius: 24,
+            border: "1px solid #e5e7eb",
+            boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
           }}
         >
+          <button style={tabButton("inicio")} onClick={() => setActiveTab("inicio")}>
+            Início
+          </button>
+
           <button style={tabButton("pesquisa")} onClick={() => setActiveTab("pesquisa")}>
             Pesquisa
           </button>
@@ -1477,6 +1752,151 @@ export default function App() {
             Entrada e Saída
           </button>
         </div>
+
+        {activeTab === "inicio" && (
+          <div style={{ display: "grid", gap: 20 }}>
+            <MiningHero
+              materialsCount={materials.length}
+              inventoriesCount={inventories.length}
+              movementsCount={currentMonthMovements.length}
+              monthLabel={currentMonthLabel}
+            />
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                gap: 18,
+              }}
+            >
+              <StatCard
+                title="Materiais cadastrados"
+                value={materials.length}
+                subtitle="Base total cadastrada"
+                icon="📦"
+              />
+              <StatCard
+                title="Inventários salvos"
+                value={inventories.length}
+                subtitle="Histórico de contagens"
+                icon="📝"
+              />
+              <StatCard
+                title="Entradas no mês"
+                value={currentMonthEntries}
+                subtitle={currentMonthLabel}
+                icon="⬇️"
+              />
+              <StatCard
+                title="Saídas no mês"
+                value={currentMonthOutputs}
+                subtitle={currentMonthLabel}
+                icon="⬆️"
+              />
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr 1fr",
+                gap: 18,
+              }}
+            >
+              <QuickAction
+                title="Pesquisar material"
+                text="Encontre rápido por PN, descrição, localização ou observação."
+                buttonText="Abrir pesquisa"
+                onClick={() => setActiveTab("pesquisa")}
+              />
+
+              <QuickAction
+                title="Registrar entrada ou saída"
+                text="Lance movimentações do mês com quantidade, foto, data e usuário responsável."
+                buttonText="Abrir movimentação"
+                onClick={() => setActiveTab("movimentacao")}
+              />
+
+              <QuickAction
+                title="Criar ou abrir inventário"
+                text="Monte um novo inventário, continue um salvo ou adicione item pesquisado."
+                buttonText="Abrir inventário"
+                onClick={() => setActiveTab("inventario")}
+              />
+            </div>
+
+            <Panel title={`Resumo de movimentações de ${currentMonthLabel}`}>
+              {currentMonthMovements.length ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {currentMonthMovements
+                    .sort((a, b) => new Date(b.data) - new Date(a.data))
+                    .slice(0, 6)
+                    .map((item) => (
+                      <div
+                        key={item.id}
+                        style={{
+                          border: "1px solid #e5e7eb",
+                          borderRadius: 18,
+                          padding: 14,
+                          background: "white",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: 12,
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 800 }}>{item.descricao}</div>
+                          <div style={{ color: "#6b7280", marginTop: 4 }}>
+                            PN: {item.pn}
+                          </div>
+                          <div style={{ color: "#6b7280", marginTop: 4 }}>
+                            Usuário: {item.usuarioNome} • {formatDateTime(item.data)}
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span
+                            style={{
+                              ...movementTypeStyle(item.tipo),
+                              padding: "6px 12px",
+                              borderRadius: 999,
+                              fontSize: 12,
+                              fontWeight: 800,
+                            }}
+                          >
+                            {item.tipo}
+                          </span>
+                          <div style={{ fontWeight: 900, fontSize: 20 }}>
+                            {item.quantidade}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                  <div style={{ marginTop: 6 }}>
+                    <ActionButton kind="secondary" onClick={() => setActiveTab("movimentacao")}>
+                      Ver todas as movimentações do mês
+                    </ActionButton>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    border: "1px dashed #cbd5e1",
+                    borderRadius: 22,
+                    padding: 28,
+                    textAlign: "center",
+                    color: "#64748b",
+                    background: "#f8fafc",
+                  }}
+                >
+                  Ainda não existem movimentações registradas neste mês.
+                </div>
+              )}
+            </Panel>
+          </div>
+        )}
 
         {activeTab === "pesquisa" && (
           <div style={{ display: "grid", gridTemplateColumns: "0.9fr 1.1fr", gap: 20 }}>
