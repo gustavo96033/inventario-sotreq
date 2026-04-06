@@ -18,30 +18,30 @@ const ACCESS_CONFIG = {
   inventario: [
     {
       matricula: "401711",
-      senha: "Si91077463@",
+      senha: "1234",
       nome: "Gustavo",
     },
     {
-      matricula: "401668",
-      senha: "Ad@301769x",
-      nome: "Alaysson",
+      matricula: "2222",
+      senha: "2222",
+      nome: "Líder de equipe",
     },
   ],
   materiais: [
     {
       matricula: "401711",
-      senha: "Si91077463@",
+      senha: "1234",
       nome: "Gustavo",
     },
     {
-      matricula: "401668",
-      senha: "Ad@301769x",
-      nome: "Alaysson",
+      matricula: "3333",
+      senha: "3333",
+      nome: "Auxiliar 1",
     },
     {
-      matricula: "401667,
-      senha: "12345",
-      nome: "Kaique",
+      matricula: "4444",
+      senha: "4444",
+      nome: "Auxiliar 2",
     },
   ],
 };
@@ -902,7 +902,7 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
               >
                 <div style={{ color: "#9ca3af", fontSize: 12 }}>Sistema</div>
                 <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
-                  Gestão inteligente de estoque
+                  Visual do sistema
                 </div>
               </div>
             </div>
