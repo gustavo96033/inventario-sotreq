@@ -27,11 +27,6 @@ const ACCESS_CONFIG = {
       nome: "Alaysson",
     },
   ],
-      matricula: "401668",
-      senha: "Ad@301769x",
-      nome: "Alaysson",
-    },
-    {  
   materiais: [
     {
       matricula: "401711",
