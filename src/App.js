@@ -979,15 +979,18 @@ export default function App() {
   const [editingPn, setEditingPn] = useState("");
 
   const [inventarioLoginForm, setInventarioLoginForm] = useState({
-    matricula: "",
-    senha: "",
-  });
-  const [materiaisLoginForm, setMateriaisLoginForm] = useState({
-    matricula: "",
-    senha: "",
-  });
-  const [inventarioLoginError, setInventarioLoginError] = useState("");
-  const [materiaisLoginError, setMateriaisLoginError] = useState("");
+  email: "",
+  senha: "",
+});
+const [materiaisLoginForm, setMateriaisLoginForm] = useState({
+  email: "",
+  senha: "",
+});
+const [inventarioLoginError, setInventarioLoginError] = useState("");
+const [materiaisLoginError, setMateriaisLoginError] = useState("");
+const [authLoading, setAuthLoading] = useState(false);
+const [sessionUser, setSessionUser] = useState(null);
+const [profile, setProfile] = useState(null);
 
   const [newMaterial, setNewMaterial] = useState({
     pn: "",
