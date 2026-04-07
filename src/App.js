@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const STORAGE_KEYS = {
-  inventories: "orbisys_inventories_v1",
-  currentInventory: "orbisys_current_v1",
   auth: "orbisys_auth_v1",
 };
 
@@ -963,12 +961,8 @@ function buildMaterialsWithHistory(materialRows, historyRows) {
 export default function App() {
   const [materials, setMaterials] = useState([]);
   const [movements, setMovements] = useState([]);
-  const [inventories, setInventories] = useState(() =>
-    readStorage(STORAGE_KEYS.inventories, [])
-  );
-  const [currentInventory, setCurrentInventory] = useState(() =>
-    readStorage(STORAGE_KEYS.currentInventory, null)
-  );
+  const [inventories, setInventories] = useState([]);
+  const [currentInventory, setCurrentInventory] = useState(null);
   const [authState, setAuthState] = useState(() =>
     readStorage(STORAGE_KEYS.auth, {
       inventario: null,
@@ -1017,8 +1011,6 @@ export default function App() {
   const [movementMonthFilter, setMovementMonthFilter] = useState(getMonthKey());
   const csvInputRef = useRef(null);
 
-  useEffect(() => writeStorage(STORAGE_KEYS.inventories, inventories), [inventories]);
-  useEffect(() => writeStorage(STORAGE_KEYS.currentInventory, currentInventory), [currentInventory]);
   useEffect(() => writeStorage(STORAGE_KEYS.auth, authState), [authState]);
 
   async function loadCloudData() {
@@ -1032,16 +1024,25 @@ export default function App() {
     setCloudError("");
 
     try {
-      const [{ data: materialRows, error: materialError }, { data: historyRows, error: historyError }, { data: movementRows, error: movementError }] =
-        await Promise.all([
-          supabase.from("materials").select("*").order("descricao", { ascending: true }),
-          supabase.from("material_history").select("*").order("data", { ascending: false }),
-          supabase.from("movements").select("*").order("data", { ascending: false }),
-        ]);
+      const [
+        { data: materialRows, error: materialError },
+        { data: historyRows, error: historyError },
+        { data: movementRows, error: movementError },
+        { data: inventoryRows, error: inventoryError },
+        { data: inventoryItemRows, error: inventoryItemError },
+      ] = await Promise.all([
+        supabase.from("materials").select("*").order("descricao", { ascending: true }),
+        supabase.from("material_history").select("*").order("data", { ascending: false }),
+        supabase.from("movements").select("*").order("data", { ascending: false }),
+        supabase.from("inventories").select("*").order("atualizado_em", { ascending: false }),
+        supabase.from("inventory_items").select("*").order("descricao", { ascending: true }),
+      ]);
 
       if (materialError) throw materialError;
       if (historyError) throw historyError;
       if (movementError) throw movementError;
+      if (inventoryError) throw inventoryError;
+      if (inventoryItemError) throw inventoryItemError;
 
       setMaterials(buildMaterialsWithHistory(materialRows || [], historyRows || []));
       setMovements(
@@ -1058,6 +1059,26 @@ export default function App() {
           data: item.data,
           usuarioNome: item.usuario_nome || "-",
           usuarioMatricula: item.usuario_matricula || "-",
+        }))
+      );
+      setInventories(
+        (inventoryRows || []).map((inv) => ({
+          id: inv.id,
+          nome: inv.nome,
+          criadoPor: inv.criado_por || "-",
+          criadoEm: inv.criado_em || new Date().toISOString(),
+          atualizadoEm: inv.atualizado_em || new Date().toISOString(),
+          itens: (inventoryItemRows || [])
+            .filter((row) => row.inventory_id === inv.id)
+            .map((row) => ({
+              id: row.id,
+              pn: row.pn || "",
+              descricao: row.descricao || "",
+              quantidadeContada: String(row.quantidade_contada ?? 0),
+              localizacao: row.localizacao || "",
+              observacao: row.observacao || "",
+              foto: row.foto || "",
+            })),
         }))
       );
     } catch (error) {
@@ -1294,7 +1315,7 @@ export default function App() {
     }
 
     const inventory = {
-      id: createId(),
+      id: `temp-${createId()}`,
       nome: name,
       criadoPor: authState.inventario?.nome || "-",
       criadoEm: new Date().toISOString(),
@@ -1310,22 +1331,81 @@ export default function App() {
     setCurrentInventory(inv);
   }
 
-  function saveCurrentInventory() {
-    if (!currentInventory) return;
-    const updated = { ...currentInventory, atualizadoEm: new Date().toISOString() };
-    setCurrentInventory(updated);
-    setInventories((prev) => {
-      const exists = prev.some((item) => item.id === updated.id);
-      if (!exists) return [updated, ...prev];
-      return prev.map((item) => (item.id === updated.id ? updated : item));
-    });
-    window.alert("Inventário salvo com sucesso.");
+  async function saveCurrentInventory(options = { silent: false }) {
+    if (!supabase || !currentInventory) return null;
+
+    try {
+      const isNew = !currentInventory.id || String(currentInventory.id).startsWith("temp-");
+      let inventoryId = currentInventory.id;
+
+      if (isNew) {
+        const { data, error } = await supabase
+          .from("inventories")
+          .insert({
+            nome: currentInventory.nome,
+            criado_por: currentInventory.criadoPor || authState.inventario?.nome || "-",
+            criado_em: currentInventory.criadoEm || new Date().toISOString(),
+            atualizado_em: new Date().toISOString(),
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        inventoryId = data.id;
+      } else {
+        const { error } = await supabase
+          .from("inventories")
+          .update({
+            nome: currentInventory.nome,
+            atualizado_em: new Date().toISOString(),
+          })
+          .eq("id", currentInventory.id);
+
+        if (error) throw error;
+      }
+
+      const { error: deleteItemsError } = await supabase
+        .from("inventory_items")
+        .delete()
+        .eq("inventory_id", inventoryId);
+      if (deleteItemsError) throw deleteItemsError;
+
+      const itemPayload = (currentInventory.itens || []).map((item) => ({
+        inventory_id: inventoryId,
+        pn: item.pn || "",
+        descricao: item.descricao || "",
+        quantidade_contada: Number(item.quantidadeContada || 0),
+        localizacao: item.localizacao || "",
+        observacao: item.observacao || "",
+        foto: item.foto || "",
+      }));
+
+      if (itemPayload.length) {
+        const { error: insertItemsError } = await supabase
+          .from("inventory_items")
+          .insert(itemPayload);
+        if (insertItemsError) throw insertItemsError;
+      }
+
+      await loadCloudData();
+      const savedInventory = inventories.find((inv) => inv.id === inventoryId) || null;
+      if (savedInventory) setCurrentInventory(savedInventory);
+      if (!options.silent) window.alert("Inventário salvo na nuvem com sucesso.");
+      return inventoryId;
+    } catch (error) {
+      console.error(error);
+      window.alert(error.message || "Erro ao salvar inventário na nuvem.");
+      return null;
+    }
   }
 
-  function finishCurrentInventory() {
+  async function finishCurrentInventory() {
     if (!currentInventory) return;
-    saveCurrentInventory();
-    setCurrentInventory(null);
+    const savedId = await saveCurrentInventory({ silent: true });
+    if (savedId) {
+      setCurrentInventory(null);
+      window.alert("Inventário finalizado e salvo na nuvem.");
+    }
   }
 
   function addManualItemToInventory() {
