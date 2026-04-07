@@ -1015,7 +1015,73 @@ const [profile, setProfile] = useState(null);
   const csvInputRef = useRef(null);
 
   useEffect(() => writeStorage(STORAGE_KEYS.auth, authState), [authState]);
+async function loadProfile(user) {
+  if (!supabase || !user) {
+    setProfile(null);
+    return null;
+  }
 
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (error) {
+    console.error(error);
+    setProfile(null);
+    return null;
+  }
+
+  setProfile(data || null);
+  return data || null;
+}
+
+useEffect(() => {
+  if (!supabase) return;
+
+  supabase.auth.getUser().then(async ({ data }) => {
+    const user = data?.user || null;
+    setSessionUser(user);
+
+    if (user) {
+      const loadedProfile = await loadProfile(user);
+      const resolvedName = loadedProfile?.nome || user.email || "Usuário";
+      const resolvedMatricula = loadedProfile?.matricula || "-";
+
+      setAuthState({
+        inventario: { nome: resolvedName, matricula: resolvedMatricula },
+        materiais: { nome: resolvedName, matricula: resolvedMatricula },
+      });
+    } else {
+      setAuthState({ inventario: null, materiais: null });
+    }
+  });
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const user = session?.user || null;
+    setSessionUser(user);
+
+    if (user) {
+      const loadedProfile = await loadProfile(user);
+      const resolvedName = loadedProfile?.nome || user.email || "Usuário";
+      const resolvedMatricula = loadedProfile?.matricula || "-";
+
+      setAuthState({
+        inventario: { nome: resolvedName, matricula: resolvedMatricula },
+        materiais: { nome: resolvedName, matricula: resolvedMatricula },
+      });
+    } else {
+      setProfile(null);
+      setAuthState({ inventario: null, materiais: null });
+    }
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
+  
   async function loadCloudData() {
     if (!supabase) {
       setCloudError("Supabase não encontrado. Confira o script no index.html.");
