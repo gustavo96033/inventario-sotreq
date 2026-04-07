@@ -918,43 +918,43 @@ function WelcomeScreen({ onEnter }) {
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(135deg, #0F172A 0%, #1E293B 48%, #334155 100%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
+        background: "#E8EDF5",
+        padding: 18,
         fontFamily:
           'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
       <div
         style={{
-          width: "100%",
-          maxWidth: 1100,
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: 16,
-          overflow: "hidden",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.35)",
+          maxWidth: 1600,
+          margin: "0 auto",
+          display: "grid",
+          gridTemplateColumns: "280px minmax(0, 1fr)",
+          gap: 18,
+          alignItems: "start",
         }}
       >
-        <div
+        <aside
           style={{
-            display: "grid",
-            gridTemplateColumns: "1.1fr 0.9fr",
-            minHeight: 620,
+            background: "linear-gradient(180deg, #0F172A 0%, #111827 100%)",
+            color: "white",
+            borderRadius: 18,
+            padding: 18,
+            minHeight: "calc(100vh - 36px)",
+            position: "sticky",
+            top: 18,
+            boxShadow: "0 18px 40px rgba(15,23,42,0.18)",
+            border: "1px solid rgba(255,255,255,0.06)",
           }}
         >
           <div
             style={{
-              padding: 42,
-              color: "white",
               display: "flex",
-              flexDirection: "column",
+              alignItems: "center",
               justifyContent: "space-between",
-              background:
-                "linear-gradient(160deg, rgba(47,111,237,0.18) 0%, rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.00) 100%)",
+              gap: 12,
+              paddingBottom: 16,
+              borderBottom: "1px solid rgba(255,255,255,0.08)",
             }}
           >
             <div>
@@ -962,1027 +962,243 @@ function WelcomeScreen({ onEnter }) {
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: 8,
+                  justifyContent: "center",
+                  minWidth: 48,
+                  height: 48,
+                  padding: "0 14px",
+                  borderRadius: 12,
                   background: CAT_YELLOW,
-                  color: CAT_BLACK,
-                  borderRadius: 999,
-                  padding: "10px 16px",
+                  color: "white",
                   fontWeight: 900,
-                  fontSize: 14,
+                  letterSpacing: 0.6,
                 }}
               >
+                OX
+              </div>
+              <div style={{ marginTop: 12, fontSize: 24, fontWeight: 900 }}>
                 ORBISYS
               </div>
-
-              <h1
-                style={{
-                  margin: "22px 0 14px 0",
-                  fontSize: 48,
-                  lineHeight: 1.05,
-                }}
-              >
-                Gestão operacional
-                <br />
-                de materiais
-              </h1>
-
-              <div
-                style={{
-                  color: "#d1d5db",
-                  fontSize: 18,
-                  lineHeight: 1.7,
-                  maxWidth: 620,
-                }}
-              >
-                Suite operacional para cadastro, consulta, inventário, auditoria de ações e
-                controle de movimentações com identificação por usuário.
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: 12,
-                  flexWrap: "wrap",
-                  marginTop: 24,
-                }}
-              >
-                <div
-                  style={{
-                    background: "rgba(255,255,255,0.08)",
-                    borderRadius: 10,
-                    padding: "12px 16px",
-                    fontWeight: 700,
-                  }}
-                >
-                  📦 Cadastro mestre
-                </div>
-                <div
-                  style={{
-                    background: "rgba(255,255,255,0.08)",
-                    borderRadius: 10,
-                    padding: "12px 16px",
-                    fontWeight: 700,
-                  }}
-                >
-                  📝 Inventário auditável
-                </div>
-                <div
-                  style={{
-                    background: "rgba(255,255,255,0.08)",
-                    borderRadius: 10,
-                    padding: "12px 16px",
-                    fontWeight: 700,
-                  }}
-                >
-                  🔁 Movimentações
-                </div>
+              <div style={{ marginTop: 4, color: "#94A3B8", fontSize: 13 }}>
+                Operations Suite
               </div>
             </div>
-
-            <div style={{ marginTop: 26 }}>
-              <button
-                onClick={onEnter}
-                style={{
-                  background: CAT_YELLOW,
-                  color: CAT_BLACK,
-                  border: `1px solid ${CAT_YELLOW}`,
-                  borderRadius: 10,
-                  padding: "16px 24px",
-                  fontWeight: 900,
-                  fontSize: 17,
-                  cursor: "pointer",
-                }}
-              >
-                Acessar plataforma
-              </button>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 12,
+                padding: "10px 12px",
+                fontSize: 12,
+                color: "#CBD5E1",
+                textAlign: "right",
+              }}
+            >
+              <div style={{ fontWeight: 800 }}>ERP</div>
+              <div style={{ marginTop: 4 }}>v2.0</div>
             </div>
+          </div>
+
+          <div style={{ marginTop: 18, display: "grid", gap: 8 }}>
+            {[
+              ["inicio", "Painel executivo", "◻"],
+              ["pesquisa", "Consulta mestre", "⌕"],
+              ["inventario", "Inventário físico", "▣"],
+              ["historico", "Auditoria", "≣"],
+              ["cadastro", "Cadastro mestre", "▤"],
+              ["movimentacao", "Movimentações", "↹"],
+            ].map(([tab, label, icon]) => {
+              const isActive = activeTab === tab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "34px 1fr",
+                    alignItems: "center",
+                    gap: 12,
+                    width: "100%",
+                    borderRadius: 14,
+                    border: isActive
+                      ? `1px solid ${CAT_YELLOW}`
+                      : "1px solid rgba(255,255,255,0.06)",
+                    background: isActive
+                      ? "linear-gradient(180deg, rgba(47,111,237,0.28) 0%, rgba(47,111,237,0.14) 100%)"
+                      : "rgba(255,255,255,0.03)",
+                    color: "white",
+                    padding: "13px 14px",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    fontWeight: isActive ? 800 : 700,
+                    boxShadow: isActive ? "0 10px 24px rgba(47,111,237,0.18)" : "none",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 10,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      background: isActive ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+                      color: isActive ? "#DBEAFE" : "#CBD5E1",
+                      fontSize: 14,
+                    }}
+                  >
+                    {icon}
+                  </span>
+                  <div>
+                    <div style={{ fontSize: 14 }}>{label}</div>
+                    <div style={{ fontSize: 11, color: isActive ? "#BFDBFE" : "#94A3B8", marginTop: 3 }}>
+                      {tab === "inicio" && "Visão consolidada"}
+                      {tab === "pesquisa" && "Consulta por PN e descrição"}
+                      {tab === "inventario" && "Contagem e consolidação"}
+                      {tab === "historico" && "Rastro operacional"}
+                      {tab === "cadastro" && "Base de materiais"}
+                      {tab === "movimentacao" && "Entrada e saída mensal"}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           <div
             style={{
-              padding: 30,
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.08) 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              marginTop: 20,
+              paddingTop: 18,
+              borderTop: "1px solid rgba(255,255,255,0.08)",
+              display: "grid",
+              gap: 10,
             }}
           >
             <div
               style={{
-                width: "100%",
-                maxWidth: 420,
+                background: "rgba(255,255,255,0.04)",
+                borderRadius: 14,
+                padding: 14,
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              <div style={{ color: "#94A3B8", fontSize: 11, letterSpacing: 0.4 }}>MATERIAIS</div>
+              <div style={{ marginTop: 6, fontWeight: 900, fontSize: 24 }}>{materials.length}</div>
+            </div>
+            <div
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                borderRadius: 14,
+                padding: 14,
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              <div style={{ color: "#94A3B8", fontSize: 11, letterSpacing: 0.4 }}>MOV. DO MÊS</div>
+              <div style={{ marginTop: 6, fontWeight: 900, fontSize: 24 }}>{currentMonthMovements.length}</div>
+              <div style={{ marginTop: 4, color: "#CBD5E1", fontSize: 12 }}>{currentMonthLabel}</div>
+            </div>
+          </div>
+        </aside>
+
+        <main style={{ minWidth: 0 }}>
+          <div
+            style={{
+              background: "white",
+              borderRadius: 18,
+              border: "1px solid #D8E0EA",
+              boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
+              padding: 18,
+            }}
+          >
+            <div
+              style={{
                 display: "grid",
-                gap: 16,
+                gridTemplateColumns: "1.3fr 0.7fr",
+                gap: 18,
+                alignItems: "stretch",
               }}
             >
               <div
                 style={{
-                  background: "#111827",
+                  background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
                   color: "white",
-                  borderRadius: 14,
-                  padding: 22,
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: 18,
+                  padding: 24,
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
                 }}
               >
-                <div style={{ color: "#9ca3af", fontSize: 13 }}>Módulo</div>
-                <div style={{ marginTop: 8, fontSize: 24, fontWeight: 900 }}>
-                  Pesquisa de materiais
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 12px",
+                    borderRadius: 999,
+                    background: "rgba(47,111,237,0.18)",
+                    color: "#BFDBFE",
+                    fontWeight: 800,
+                    fontSize: 12,
+                    border: "1px solid rgba(191,219,254,0.12)",
+                  }}
+                >
+                  OPERATIONS CONTROL PLATFORM
                 </div>
-                <div style={{ marginTop: 8, color: "#d1d5db" }}>
-                  Consulta por PN, descrição, endereço logístico e histórico operacional.
+                <h1 style={{ margin: "16px 0 8px 0", fontSize: 34, lineHeight: 1.05 }}>
+                  Gestão operacional com rastreabilidade e controle mestre
+                </h1>
+                <div style={{ color: "#CBD5E1", lineHeight: 1.6, maxWidth: 820 }}>
+                  Plataforma para cadastro mestre de materiais, consulta operacional, inventário físico, auditoria de alterações e movimentações mensais com identificação por usuário.
+                </div>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
+                  {[
+                    `Base ativa: ${materials.length} materiais`,
+                    `Inventários: ${inventories.length}`,
+                    `Módulo atual: ${activeTab.toUpperCase()}`
+                  ].map((item) => (
+                    <div
+                      key={item}
+                      style={{
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: 12,
+                        padding: "10px 12px",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {item}
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div
                 style={{
-                  background: "#111827",
-                  color: "white",
-                  borderRadius: 14,
-                  padding: 22,
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  display: "grid",
+                  gap: 12,
                 }}
               >
-                <div style={{ color: "#9ca3af", fontSize: 13 }}>Módulo</div>
-                <div style={{ marginTop: 8, fontSize: 24, fontWeight: 900 }}>
-                  Inventário e histórico
-                </div>
-                <div style={{ marginTop: 8, color: "#d1d5db" }}>
-                  Inventários persistidos com rastreabilidade por operador.
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "#111827",
-                  color: "white",
-                  borderRadius: 14,
-                  padding: 22,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <div style={{ color: "#9ca3af", fontSize: 13 }}>Módulo</div>
-                <div style={{ marginTop: 8, fontSize: 24, fontWeight: 900 }}>
-                  Entrada e saída mensal
-                </div>
-                <div style={{ marginTop: 8, color: "#d1d5db" }}>
-                  Registro mensal de entradas, saídas, quantidades e evidências.
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function exportToCsv(filename, rows) {
-  const csvContent = rows.map((row) => row.join(";")).join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const link = document.createElement("a");
-  const url = URL.createObjectURL(blob);
-  link.href = url;
-  link.setAttribute("download", filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
-// Orbisys Stage 1 Rebrand - visual corporativo
-export default function App() {
-  const [materials, setMaterials] = useState(() =>
-    readStorage(STORAGE_KEYS.materials, [])
-  );
-  const [inventories, setInventories] = useState(() =>
-    readStorage(STORAGE_KEYS.inventories, [])
-  );
-  const [currentInventory, setCurrentInventory] = useState(() =>
-    readStorage(STORAGE_KEYS.currentInventory, null)
-  );
-  const [authState, setAuthState] = useState(() =>
-    readStorage(STORAGE_KEYS.auth, {
-      inventario: null,
-      materiais: null,
-    })
-  );
-  const [movements, setMovements] = useState(() =>
-    readStorage(STORAGE_KEYS.movements, [])
-  );
-
-  const [enteredApp, setEnteredApp] = useState(false);
-  const [activeTab, setActiveTab] = useState("inicio");
-  const [search, setSearch] = useState("");
-  const [selectedMaterialPn, setSelectedMaterialPn] = useState("");
-
-  const [newMaterial, setNewMaterial] = useState({
-    pn: "",
-    descricao: "",
-    localizacao: "",
-    quantidade: "",
-    observacao: "",
-    status: "IDENTIFICADO",
-    foto: "",
-  });
-
-  const [editingPn, setEditingPn] = useState(null);
-
-  const [newInventoryName, setNewInventoryName] = useState("");
-
-  const [inventarioLoginForm, setInventarioLoginForm] = useState({
-    matricula: "",
-    senha: "",
-  });
-  const [materiaisLoginForm, setMateriaisLoginForm] = useState({
-    matricula: "",
-    senha: "",
-  });
-  const [inventarioLoginError, setInventarioLoginError] = useState("");
-  const [materiaisLoginError, setMateriaisLoginError] = useState("");
-
-  const [movementForm, setMovementForm] = useState({
-    tipo: "SAÍDA",
-    pn: "",
-    quantidade: "",
-    observacao: "",
-    foto: "",
-    data: new Date().toISOString().slice(0, 16),
-  });
-
-  const [movementMonthFilter, setMovementMonthFilter] = useState(
-    getMonthKey(new Date())
-  );
-
-  const csvInputRef = useRef(null);
-
-  useEffect(() => {
-    writeStorage(STORAGE_KEYS.materials, materials);
-  }, [materials]);
-
-  useEffect(() => {
-    writeStorage(STORAGE_KEYS.inventories, inventories);
-  }, [inventories]);
-
-  useEffect(() => {
-    writeStorage(STORAGE_KEYS.currentInventory, currentInventory);
-  }, [currentInventory]);
-
-  useEffect(() => {
-    writeStorage(STORAGE_KEYS.auth, authState);
-  }, [authState]);
-
-  useEffect(() => {
-    writeStorage(STORAGE_KEYS.movements, movements);
-  }, [movements]);
-
-  const canAccessInventario = !!authState.inventario;
-  const canAccessMateriais = !!authState.materiais;
-
-  const selectedMaterial = useMemo(() => {
-    return materials.find((item) => item.pn === selectedMaterialPn) || null;
-  }, [materials, selectedMaterialPn]);
-
-  const matchedMovementMaterial = useMemo(() => {
-    return (
-      materials.find(
-        (item) => normalizeText(item.pn) === normalizeText(movementForm.pn)
-      ) || null
-    );
-  }, [materials, movementForm.pn]);
-
-  const filteredMaterials = useMemo(() => {
-    const q = normalizeText(search);
-    if (!q) return materials;
-
-    return materials.filter((item) => {
-      const combined = [
-        item.pn,
-        item.descricao,
-        item.localizacao,
-        item.observacao,
-        item.status,
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return normalizeText(combined).includes(q);
-    });
-  }, [materials, search]);
-
-  const movementMonths = useMemo(() => {
-    const keys = Array.from(
-      new Set(movements.map((item) => getMonthKey(item.data)))
-    ).sort((a, b) => b.localeCompare(a));
-
-    if (!keys.includes(movementMonthFilter)) {
-      return [movementMonthFilter, ...keys].filter(Boolean);
-    }
-
-    return keys;
-  }, [movements, movementMonthFilter]);
-
-  const filteredMovements = useMemo(() => {
-    return movements.filter(
-      (item) => getMonthKey(item.data) === movementMonthFilter
-    );
-  }, [movements, movementMonthFilter]);
-
-  const currentMonthLabel = formatMonthLabel(getMonthKey(new Date()));
-
-  const currentMonthMovements = useMemo(() => {
-    const currentMonth = getMonthKey(new Date());
-    return movements.filter((item) => getMonthKey(item.data) === currentMonth);
-  }, [movements]);
-
-  const currentMonthEntries = useMemo(() => {
-    return currentMonthMovements
-      .filter((item) => String(item.tipo).toUpperCase() === "ENTRADA")
-      .reduce((sum, item) => sum + Number(item.quantidade || 0), 0);
-  }, [currentMonthMovements]);
-
-  const currentMonthOutputs = useMemo(() => {
-    return currentMonthMovements
-      .filter((item) => {
-        const tipo = String(item.tipo).toUpperCase();
-        return tipo === "SAÍDA" || tipo === "SAIDA";
-      })
-      .reduce((sum, item) => sum + Number(item.quantidade || 0), 0);
-  }, [currentMonthMovements]);
-
-  function authenticate(area, matricula, senha) {
-    const users = ACCESS_CONFIG[area] || [];
-    return (
-      users.find(
-        (user) =>
-          String(user.matricula) === String(matricula).trim() &&
-          String(user.senha) === String(senha)
-      ) || null
-    );
-  }
-
-  function handleInventarioLogin() {
-    const found = authenticate(
-      "inventario",
-      inventarioLoginForm.matricula,
-      inventarioLoginForm.senha
-    );
-
-    if (!found) {
-      setInventarioLoginError(
-        "Matrícula ou senha inválida para a área de inventário."
-      );
-      return;
-    }
-
-    setInventarioLoginError("");
-    setAuthState((prev) => ({
-      ...prev,
-      inventario: {
-        matricula: found.matricula,
-        nome: found.nome,
-        loggedAt: new Date().toISOString(),
-      },
-    }));
-    setInventarioLoginForm({ matricula: "", senha: "" });
-  }
-
-  function handleMateriaisLogin() {
-    const found = authenticate(
-      "materiais",
-      materiaisLoginForm.matricula,
-      materiaisLoginForm.senha
-    );
-
-    if (!found) {
-      setMateriaisLoginError(
-        "Matrícula ou senha inválida para a área de materiais."
-      );
-      return;
-    }
-
-    setMateriaisLoginError("");
-    setAuthState((prev) => ({
-      ...prev,
-      materiais: {
-        matricula: found.matricula,
-        nome: found.nome,
-        loggedAt: new Date().toISOString(),
-      },
-    }));
-    setMateriaisLoginForm({ matricula: "", senha: "" });
-  }
-
-  function logoutArea(area) {
-    setAuthState((prev) => ({
-      ...prev,
-      [area]: null,
-    }));
-
-    if (area === "inventario") {
-      setInventarioLoginError("");
-      setInventarioLoginForm({ matricula: "", senha: "" });
-    }
-
-    if (area === "materiais") {
-      setMateriaisLoginError("");
-      setMateriaisLoginForm({ matricula: "", senha: "" });
-    }
-  }
-
-  function resetMaterialForm() {
-    setNewMaterial({
-      pn: "",
-      descricao: "",
-      localizacao: "",
-      quantidade: "",
-      observacao: "",
-      status: "IDENTIFICADO",
-      foto: "",
-    });
-    setEditingPn(null);
-  }
-
-  function saveMaterial() {
-    const pn = String(newMaterial.pn || "").trim();
-    const descricao = String(newMaterial.descricao || "").trim();
-
-    if (!pn || !descricao) {
-      alert("Preencha pelo menos o PN e a descrição.");
-      return;
-    }
-
-    const quantity = Number(newMaterial.quantidade || 0);
-
-    const baseRecord = {
-      pn,
-      descricao,
-      localizacao: String(newMaterial.localizacao || "").trim(),
-      quantidade: Number.isFinite(quantity) ? quantity : 0,
-      observacao: String(newMaterial.observacao || "").trim(),
-      status: String(newMaterial.status || "IDENTIFICADO").trim(),
-      foto: newMaterial.foto || "",
-      atualizadoEm: new Date().toISOString(),
-    };
-
-    if (editingPn) {
-      setMaterials((prev) =>
-        prev.map((item) => {
-          if (item.pn !== editingPn) return item;
-
-          const historyEntry = {
-            id: createId(),
-            acao: "EDIÇÃO DE CADASTRO",
-            data: new Date().toISOString(),
-            usuarioNome: authState.materiais?.nome || "Usuário",
-            usuarioMatricula: authState.materiais?.matricula || "-",
-            detalhe: `Material ${item.pn} editado`,
-          };
-
-          return {
-            ...item,
-            ...baseRecord,
-            historico: [...(item.historico || []), historyEntry],
-          };
-        })
-      );
-
-      alert("Material atualizado com sucesso.");
-    } else {
-      const alreadyExists = materials.some(
-        (item) => normalizeText(item.pn) === normalizeText(pn)
-      );
-
-      if (alreadyExists) {
-        alert("Já existe um material com esse PN.");
-        return;
-      }
-
-      const historyEntry = {
-        id: createId(),
-        acao: "CADASTRO",
-        data: new Date().toISOString(),
-        usuarioNome: authState.materiais?.nome || "Usuário",
-        usuarioMatricula: authState.materiais?.matricula || "-",
-        detalhe: `Material ${pn} cadastrado`,
-      };
-
-      setMaterials((prev) => [
-        {
-          id: createId(),
-          criadoEm: new Date().toISOString(),
-          historico: [historyEntry],
-          ...baseRecord,
-        },
-        ...prev,
-      ]);
-
-      alert("Material salvo com sucesso.");
-    }
-
-    resetMaterialForm();
-  }
-
-  function handleEditMaterial(item) {
-    setEditingPn(item.pn);
-    setNewMaterial({
-      pn: item.pn || "",
-      descricao: item.descricao || "",
-      localizacao: item.localizacao || "",
-      quantidade: String(item.quantidade ?? ""),
-      observacao: item.observacao || "",
-      status: item.status || "IDENTIFICADO",
-      foto: item.foto || "",
-    });
-    setActiveTab("cadastro");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
-
-  function deleteMaterial(pn) {
-    const material = materials.find((item) => item.pn === pn);
-    if (!material) return;
-
-    const confirmed = window.confirm(
-      `Tem certeza que deseja excluir o material ${pn}?`
-    );
-    if (!confirmed) return;
-
-    setMaterials((prev) => prev.filter((item) => item.pn !== pn));
-
-    if (selectedMaterialPn === pn) {
-      setSelectedMaterialPn("");
-    }
-
-    alert("Material excluído.");
-  }
-
-  function startNewInventory() {
-    const name =
-      newInventoryName.trim() ||
-      `Inventário ${new Date().toLocaleDateString("pt-BR")}`;
-
-    setCurrentInventory({
-      id: createId(),
-      nome: name,
-      criadoEm: new Date().toISOString(),
-      atualizadoEm: new Date().toISOString(),
-      criadoPor: authState.inventario?.nome || "Usuário",
-      itens: [],
-    });
-
-    setNewInventoryName("");
-  }
-
-  function saveCurrentInventory() {
-    if (!currentInventory) return;
-
-    const sanitized = {
-      ...currentInventory,
-      atualizadoEm: new Date().toISOString(),
-    };
-
-    setCurrentInventory(sanitized);
-
-    setInventories((prev) => {
-      const exists = prev.some((inv) => inv.id === sanitized.id);
-      if (exists) {
-        return prev.map((inv) => (inv.id === sanitized.id ? sanitized : inv));
-      }
-      return [sanitized, ...prev];
-    });
-
-    alert("Inventário salvo com sucesso.");
-  }
-
-  function openInventory(inv) {
-    setCurrentInventory(inv);
-    setActiveTab("inventario");
-  }
-
-  function addManualItemToInventory() {
-    if (!currentInventory) return;
-
-    setCurrentInventory((prev) => ({
-      ...prev,
-      atualizadoEm: new Date().toISOString(),
-      itens: [
-        ...(prev?.itens || []),
-        {
-          id: createId(),
-          pn: "",
-          descricao: "",
-          quantidadeContada: "",
-          localizacao: "",
-          observacao: "",
-          foto: "",
-        },
-      ],
-    }));
-  }
-
-  function addSearchedItemToInventory() {
-    if (!currentInventory || !selectedMaterial) {
-      alert("Selecione um material na pesquisa primeiro.");
-      return;
-    }
-
-    setCurrentInventory((prev) => ({
-      ...prev,
-      atualizadoEm: new Date().toISOString(),
-      itens: [
-        ...(prev?.itens || []),
-        {
-          id: createId(),
-          pn: selectedMaterial.pn,
-          descricao: selectedMaterial.descricao,
-          quantidadeContada: selectedMaterial.quantidade ?? "",
-          localizacao: selectedMaterial.localizacao || "",
-          observacao: selectedMaterial.observacao || "",
-          foto: selectedMaterial.foto || "",
-        },
-      ],
-    }));
-
-    setActiveTab("inventario");
-  }
-
-  function updateInventoryItem(itemId, nextItem) {
-    setCurrentInventory((prev) => ({
-      ...prev,
-      atualizadoEm: new Date().toISOString(),
-      itens: prev.itens.map((item) => (item.id === itemId ? nextItem : item)),
-    }));
-  }
-
-  function removeInventoryItem(itemId) {
-    setCurrentInventory((prev) => ({
-      ...prev,
-      atualizadoEm: new Date().toISOString(),
-      itens: prev.itens.filter((item) => item.id !== itemId),
-    }));
-  }
-
-  function finishCurrentInventory() {
-    if (!currentInventory) return;
-    saveCurrentInventory();
-    setCurrentInventory(null);
-    alert("Inventário finalizado e salvo no histórico.");
-  }
-
-  function importCsvFile(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const text = String(reader.result || "");
-      const imported = parseCsvText(text);
-
-      if (!imported.length) {
-        alert("Não foi possível importar a planilha.");
-        return;
-      }
-
-      setMaterials((prev) => {
-        const map = new Map(prev.map((item) => [normalizeText(item.pn), item]));
-
-        imported.forEach((item) => {
-          const key = normalizeText(item.pn);
-          const existing = map.get(key);
-
-          if (existing) {
-            map.set(key, {
-              ...existing,
-              ...item,
-              historico: [
-                ...(existing.historico || []),
-                {
-                  id: createId(),
-                  acao: "IMPORTAÇÃO CSV",
-                  data: new Date().toISOString(),
-                  usuarioNome: authState.materiais?.nome || "Sistema",
-                  usuarioMatricula: authState.materiais?.matricula || "-",
-                  detalhe: `Material ${item.pn} atualizado por importação`,
-                },
-              ],
-            });
-          } else {
-            map.set(key, {
-              ...item,
-              historico: [
-                {
-                  id: createId(),
-                  acao: "IMPORTAÇÃO CSV",
-                  data: new Date().toISOString(),
-                  usuarioNome: authState.materiais?.nome || "Sistema",
-                  usuarioMatricula: authState.materiais?.matricula || "-",
-                  detalhe: `Material ${item.pn} importado por CSV`,
-                },
-              ],
-            });
-          }
-        });
-
-        return Array.from(map.values()).sort((a, b) =>
-          a.descricao.localeCompare(b.descricao, "pt-BR")
-        );
-      });
-
-      alert(`Importação concluída. ${imported.length} item(ns) processado(s).`);
-      if (csvInputRef.current) csvInputRef.current.value = "";
-    };
-
-    reader.readAsText(file, "utf-8");
-  }
-
-  function registerMovement() {
-    const pn = String(movementForm.pn || "").trim();
-    const quantidade = Number(movementForm.quantidade || 0);
-
-    if (!pn) {
-      alert("Digite o PN.");
-      return;
-    }
-
-    if (!quantidade || quantidade <= 0) {
-      alert("Digite uma quantidade válida.");
-      return;
-    }
-
-    const material = materials.find(
-      (item) => normalizeText(item.pn) === normalizeText(pn)
-    );
-
-    if (!material) {
-      alert("PN não encontrado nos materiais cadastrados.");
-      return;
-    }
-
-    const isEntrada = String(movementForm.tipo).toUpperCase() === "ENTRADA";
-    const currentQty = Number(material.quantidade || 0);
-    const nextQty = isEntrada ? currentQty + quantidade : currentQty - quantidade;
-
-    if (!isEntrada && nextQty < 0) {
-      alert("Não é possível fazer saída maior do que a quantidade atual.");
-      return;
-    }
-
-    const record = {
-      id: createId(),
-      tipo: isEntrada ? "ENTRADA" : "SAÍDA",
-      pn: material.pn,
-      descricao: material.descricao,
-      quantidade,
-      observacao: String(movementForm.observacao || "").trim(),
-      foto: movementForm.foto || "",
-      data: movementForm.data
-        ? new Date(movementForm.data).toISOString()
-        : new Date().toISOString(),
-      usuarioNome: authState.materiais?.nome || "Usuário",
-      usuarioMatricula: authState.materiais?.matricula || "-",
-      quantidadeAntes: currentQty,
-      quantidadeDepois: nextQty,
-    };
-
-    setMovements((prev) => [record, ...prev]);
-
-    setMaterials((prev) =>
-      prev.map((item) => {
-        if (item.pn !== material.pn) return item;
-
-        return {
-          ...item,
-          quantidade: nextQty,
-          atualizadoEm: new Date().toISOString(),
-          historico: [
-            ...(item.historico || []),
-            {
-              id: createId(),
-              acao: record.tipo,
-              data: record.data,
-              usuarioNome: record.usuarioNome,
-              usuarioMatricula: record.usuarioMatricula,
-              detalhe: `${record.tipo} de ${quantidade} unidade(s). Antes: ${currentQty}. Depois: ${nextQty}.`,
-              foto: record.foto || "",
-              observacao: record.observacao || "",
-            },
-          ],
-        };
-      })
-    );
-
-    setMovementForm({
-      tipo: "SAÍDA",
-      pn: "",
-      quantidade: "",
-      observacao: "",
-      foto: "",
-      data: new Date().toISOString().slice(0, 16),
-    });
-
-    setMovementMonthFilter(getMonthKey(record.data));
-    alert("Movimentação registrada com sucesso.");
-  }
-
-  function exportMaterialsCsv() {
-    const rows = [
-      ["PN", "DESCRIÇÃO", "LOCALIZAÇÃO", "OBSERVAÇÃO", "STATUS", "QUANTIDADE"],
-      ...materials.map((item) => [
-        item.pn,
-        item.descricao,
-        item.localizacao || "",
-        item.observacao || "",
-        item.status || "",
-        item.quantidade ?? 0,
-      ]),
-    ];
-
-    exportToCsv("materiais.csv", rows);
-  }
-
-  function exportMovementsCsv() {
-    const rows = [
-      [
-        "TIPO",
-        "PN",
-        "DESCRIÇÃO",
-        "QUANTIDADE",
-        "USUÁRIO",
-        "MATRÍCULA",
-        "DATA",
-        "OBSERVAÇÃO",
-        "ANTES",
-        "DEPOIS",
-      ],
-      ...filteredMovements.map((item) => [
-        item.tipo,
-        item.pn,
-        item.descricao,
-        item.quantidade,
-        item.usuarioNome,
-        item.usuarioMatricula,
-        formatDateTime(item.data),
-        item.observacao || "",
-        item.quantidadeAntes,
-        item.quantidadeDepois,
-      ]),
-    ];
-
-    exportToCsv(`movimentacoes_${movementMonthFilter}.csv`, rows);
-  }
-
-  function tabButton(tab) {
-    const isActive = activeTab === tab;
-    return {
-      border: isActive ? `1px solid ${CAT_YELLOW}` : "1px solid #d1d5db",
-      background: isActive ? CAT_YELLOW : "white",
-      color: CAT_BLACK,
-      borderRadius: 10,
-      padding: "12px 16px",
-      fontWeight: 800,
-      cursor: "pointer",
-    };
-  }
-
-  if (!enteredApp) {
-    return <WelcomeScreen onEnter={() => setEnteredApp(true)} />;
-  }
-
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#EEF2F7",
-        padding: 20,
-        fontFamily:
-          'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      }}
-    >
-      <div style={{ maxWidth: 1450, margin: "0 auto" }}>
-        <div
-          style={{
-            background: CAT_BLACK,
-            borderRadius: 16,
-            padding: 24,
-            color: "white",
-            boxShadow: "0 12px 32px rgba(15,23,42,0.18)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              flexWrap: "wrap",
-              justifyContent: "space-between",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  background: CAT_YELLOW,
-                  color: CAT_BLACK,
-                  padding: "10px 14px",
-                  borderRadius: 10,
-                  fontWeight: 800,
-                  letterSpacing: 0.3,
-                  display: "inline-block",
-                }}
-              >
-                ORBISYS
-              </div>
-              <h1 style={{ margin: "14px 0 6px 0", fontSize: 30 }}>
-                Gestão de materiais
-              </h1>
-              <div style={{ color: "#d1d5db" }}>
-                Cadastro mestre, inventário, auditoria e movimentações operacionais
+                {[
+                  ["ENTRADAS", currentMonthEntries, currentMonthLabel],
+                  ["SAÍDAS", currentMonthOutputs, currentMonthLabel],
+                  ["AUDITORIA", movements.length, "Eventos totais"],
+                ].map(([title, value, subtitle]) => (
+                  <div
+                    key={title}
+                    style={{
+                      borderRadius: 16,
+                      border: "1px solid #D8E0EA",
+                      background: "#F8FAFC",
+                      padding: 16,
+                    }}
+                  >
+                    <div style={{ color: "#64748B", fontSize: 12, fontWeight: 700 }}>{title}</div>
+                    <div style={{ marginTop: 8, fontSize: 28, fontWeight: 900, color: "#0F172A" }}>{value}</div>
+                    <div style={{ marginTop: 4, color: "#64748B", fontSize: 13 }}>{subtitle}</div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  padding: "12px 16px",
-                }}
-              >
-                <div style={{ fontSize: 12, color: "#d1d5db" }}>Materiais</div>
-                <div style={{ fontSize: 24, fontWeight: 800 }}>
-                  {materials.length}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  padding: "12px 16px",
-                }}
-              >
-                <div style={{ fontSize: 12, color: "#d1d5db" }}>Inventários</div>
-                <div style={{ fontSize: 24, fontWeight: 800 }}>
-                  {inventories.length}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.1)",
-                  borderRadius: 12,
-                  padding: "12px 16px",
-                }}
-              >
-                <div style={{ fontSize: 12, color: "#d1d5db" }}>
-                  Movimentações
-                </div>
-                <div style={{ fontSize: 24, fontWeight: 800 }}>
-                  {movements.length}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            flexWrap: "wrap",
-            marginTop: 20,
-            marginBottom: 20,
-            background: "white",
-            padding: 12,
-            borderRadius: 14,
-            border: "1px solid #e5e7eb",
-            boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
-          }}
-        >
-          <button style={tabButton("inicio")} onClick={() => setActiveTab("inicio")}>
-            Início
-          </button>
-
-          <button style={tabButton("pesquisa")} onClick={() => setActiveTab("pesquisa")}>
-            Pesquisa
-          </button>
-
-          <button style={tabButton("inventario")} onClick={() => setActiveTab("inventario")}>
-            Inventário
-          </button>
-
-          <button style={tabButton("historico")} onClick={() => setActiveTab("historico")}>
-            Histórico
-          </button>
-
-          <button style={tabButton("cadastro")} onClick={() => setActiveTab("cadastro")}>
-            Materiais cadastrados
-          </button>
-
-          <button style={tabButton("movimentacao")} onClick={() => setActiveTab("movimentacao")}>
-            Entrada e Saída
-          </button>
-        </div>
-
+            <div style={{ marginTop: 18 }}>
         {activeTab === "inicio" && (
           <div style={{ display: "grid", gap: 20 }}>
             <MiningHero
@@ -3339,6 +2555,10 @@ export default function App() {
             </Panel>
           </div>
         )}
+
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
