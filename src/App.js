@@ -1338,11 +1338,26 @@ useEffect(() => {
     }
   }
 
-  function handleInventarioLogin() {
-    const found = ACCESS_CONFIG.inventario.find(
-      (item) =>
-        item.matricula === inventarioLoginForm.matricula &&
-        item.senha === inventarioLoginForm.senha
+  async function handleInventarioLogin() {
+  if (!supabase) return;
+
+  setAuthLoading(true);
+  setInventarioLoginError("");
+
+  try {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: inventarioLoginForm.email,
+      password: inventarioLoginForm.senha,
+    });
+
+    if (error) throw error;
+    setInventarioLoginForm({ email: "", senha: "" });
+  } catch (error) {
+    setInventarioLoginError(error.message || "Erro ao fazer login.");
+  } finally {
+    setAuthLoading(false);
+  }
+}
     );
 
     if (!found) {
