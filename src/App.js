@@ -1,15 +1,22 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const STORAGE_KEYS = {
-  materials: "orbisys_materials_v1",
   inventories: "orbisys_inventories_v1",
   currentInventory: "orbisys_current_v1",
   auth: "orbisys_auth_v1",
-  movements: "orbisys_movements_v1",
 };
 
 const CAT_YELLOW = "#2F6FED";
 const CAT_BLACK = "#0F172A";
+
+const SUPABASE_URL = "https://bjegmeiknyrdvtknuehv.supabase.co";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqZWdtZWlrbnlyZHZ0a251ZWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NzkzMjAsImV4cCI6MjA5MTE1NTMyMH0.-394udQXiGWmlbUKniSwfun2Aa_uC-FHqMscMTMb5kA";
+
+const supabase =
+  typeof window !== "undefined" && window.supabase
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
 
 const CSV_HEADERS_EXAMPLE =
   "PN;DESCRIÇÃO;LOCALIZAÇÃO;FOTO;OBSERVAÇÃO;STATUS;QUANTIDADE";
@@ -926,10 +933,36 @@ function exportToCsv(filename, rows) {
   URL.revokeObjectURL(url);
 }
 
+function buildMaterialsWithHistory(materialRows, historyRows) {
+  return materialRows.map((material) => ({
+    id: material.id || createId(),
+    pn: material.pn,
+    descricao: material.descricao,
+    localizacao: material.localizacao || "",
+    quantidade: Number(material.quantidade || 0),
+    observacao: material.observacao || "",
+    status: material.status || "IDENTIFICADO",
+    foto: material.foto || "",
+    criadoEm: material.criado_em || new Date().toISOString(),
+    atualizadoEm: material.atualizado_em || new Date().toISOString(),
+    historico: historyRows
+      .filter((hist) => hist.material_pn === material.pn)
+      .map((hist) => ({
+        id: hist.id || createId(),
+        acao: hist.acao,
+        usuarioNome: hist.usuario_nome || "-",
+        usuarioMatricula: hist.usuario_matricula || "-",
+        detalhe: hist.detalhe || "",
+        observacao: hist.observacao || "",
+        foto: hist.foto || "",
+        data: hist.data || new Date().toISOString(),
+      })),
+  }));
+}
+
 export default function App() {
-  const [materials, setMaterials] = useState(() =>
-    readStorage(STORAGE_KEYS.materials, [])
-  );
+  const [materials, setMaterials] = useState([]);
+  const [movements, setMovements] = useState([]);
   const [inventories, setInventories] = useState(() =>
     readStorage(STORAGE_KEYS.inventories, [])
   );
@@ -942,10 +975,9 @@ export default function App() {
       materiais: null,
     })
   );
-  const [movements, setMovements] = useState(() =>
-    readStorage(STORAGE_KEYS.movements, [])
-  );
 
+  const [isLoadingCloud, setIsLoadingCloud] = useState(true);
+  const [cloudError, setCloudError] = useState("");
   const [activeTab, setActiveTab] = useState("inicio");
   const [search, setSearch] = useState("");
   const [selectedMaterialPn, setSelectedMaterialPn] = useState("");
@@ -985,11 +1017,60 @@ export default function App() {
   const [movementMonthFilter, setMovementMonthFilter] = useState(getMonthKey());
   const csvInputRef = useRef(null);
 
-  useEffect(() => writeStorage(STORAGE_KEYS.materials, materials), [materials]);
   useEffect(() => writeStorage(STORAGE_KEYS.inventories, inventories), [inventories]);
   useEffect(() => writeStorage(STORAGE_KEYS.currentInventory, currentInventory), [currentInventory]);
   useEffect(() => writeStorage(STORAGE_KEYS.auth, authState), [authState]);
-  useEffect(() => writeStorage(STORAGE_KEYS.movements, movements), [movements]);
+
+  async function loadCloudData() {
+    if (!supabase) {
+      setCloudError("Supabase não encontrado. Confira o script no index.html.");
+      setIsLoadingCloud(false);
+      return;
+    }
+
+    setIsLoadingCloud(true);
+    setCloudError("");
+
+    try {
+      const [{ data: materialRows, error: materialError }, { data: historyRows, error: historyError }, { data: movementRows, error: movementError }] =
+        await Promise.all([
+          supabase.from("materials").select("*").order("descricao", { ascending: true }),
+          supabase.from("material_history").select("*").order("data", { ascending: false }),
+          supabase.from("movements").select("*").order("data", { ascending: false }),
+        ]);
+
+      if (materialError) throw materialError;
+      if (historyError) throw historyError;
+      if (movementError) throw movementError;
+
+      setMaterials(buildMaterialsWithHistory(materialRows || [], historyRows || []));
+      setMovements(
+        (movementRows || []).map((item) => ({
+          id: item.id,
+          tipo: item.tipo,
+          pn: item.pn,
+          descricao: item.descricao,
+          quantidade: Number(item.quantidade || 0),
+          quantidadeAntes: Number(item.quantidade_antes || 0),
+          quantidadeDepois: Number(item.quantidade_depois || 0),
+          observacao: item.observacao || "",
+          foto: item.foto || "",
+          data: item.data,
+          usuarioNome: item.usuario_nome || "-",
+          usuarioMatricula: item.usuario_matricula || "-",
+        }))
+      );
+    } catch (error) {
+      console.error(error);
+      setCloudError(error.message || "Erro ao carregar dados do Supabase.");
+    } finally {
+      setIsLoadingCloud(false);
+    }
+  }
+
+  useEffect(() => {
+    loadCloudData();
+  }, []);
 
   const canAccessInventario = Boolean(authState.inventario);
   const canAccessMateriais = Boolean(authState.materiais);
@@ -1019,7 +1100,9 @@ export default function App() {
   }, [materials, search]);
 
   const matchedMovementMaterial = useMemo(
-    () => materials.find((item) => normalizeText(item.pn) === normalizeText(movementForm.pn)) || null,
+    () =>
+      materials.find((item) => normalizeText(item.pn) === normalizeText(movementForm.pn)) ||
+      null,
     [materials, movementForm.pn]
   );
 
@@ -1057,15 +1140,9 @@ export default function App() {
     });
   }
 
-  function appendHistoryToMaterial(material, payload) {
-    return {
-      ...material,
-      historico: [...(material.historico || []), { id: createId(), ...payload }],
-      atualizadoEm: new Date().toISOString(),
-    };
-  }
+  async function saveMaterial() {
+    if (!supabase) return;
 
-  function saveMaterial() {
     if (!newMaterial.pn.trim() || !newMaterial.descricao.trim()) {
       window.alert("Preencha pelo menos PN e descrição.");
       return;
@@ -1075,70 +1152,61 @@ export default function App() {
     const normalizedPn = newMaterial.pn.trim();
     const quantityValue = Number(newMaterial.quantidade || 0);
 
-    if (editingPn) {
-      setMaterials((prev) =>
-        prev.map((item) => {
-          if (item.pn !== editingPn) return item;
-          return appendHistoryToMaterial(
-            {
-              ...item,
-              pn: normalizedPn,
-              descricao: newMaterial.descricao.trim(),
-              localizacao: newMaterial.localizacao.trim(),
-              quantidade: Number.isFinite(quantityValue) ? quantityValue : 0,
-              observacao: newMaterial.observacao.trim(),
-              status: newMaterial.status,
-              foto: newMaterial.foto,
-            },
-            {
-              acao: "EDIÇÃO DE CADASTRO",
-              usuarioNome: actor.nome,
-              usuarioMatricula: actor.matricula,
-              data: new Date().toISOString(),
-              detalhe: `Material ${normalizedPn} atualizado.`,
-              observacao: newMaterial.observacao.trim(),
-              foto: newMaterial.foto || "",
-            }
-          );
-        })
-      );
-      resetMaterialForm();
-      return;
-    }
+    const payload = {
+      pn: normalizedPn,
+      descricao: newMaterial.descricao.trim(),
+      localizacao: newMaterial.localizacao.trim(),
+      quantidade: Number.isFinite(quantityValue) ? quantityValue : 0,
+      observacao: newMaterial.observacao.trim(),
+      status: newMaterial.status,
+      foto: newMaterial.foto || "",
+      atualizado_em: new Date().toISOString(),
+    };
 
-    const alreadyExists = materials.some((item) => normalizeText(item.pn) === normalizeText(normalizedPn));
-    if (alreadyExists) {
-      window.alert("Já existe um material com esse PN.");
-      return;
-    }
+    try {
+      if (editingPn) {
+        const { error } = await supabase.from("materials").update(payload).eq("pn", editingPn);
+        if (error) throw error;
 
-    const material = appendHistoryToMaterial(
-      {
-        id: createId(),
-        pn: normalizedPn,
-        descricao: newMaterial.descricao.trim(),
-        localizacao: newMaterial.localizacao.trim(),
-        quantidade: Number.isFinite(quantityValue) ? quantityValue : 0,
-        observacao: newMaterial.observacao.trim(),
-        status: newMaterial.status,
-        foto: newMaterial.foto,
-        criadoEm: new Date().toISOString(),
-        atualizadoEm: new Date().toISOString(),
-        historico: [],
-      },
-      {
-        acao: "CADASTRO",
-        usuarioNome: actor.nome,
-        usuarioMatricula: actor.matricula,
-        data: new Date().toISOString(),
-        detalhe: `Material ${normalizedPn} cadastrado.`,
-        observacao: newMaterial.observacao.trim(),
-        foto: newMaterial.foto || "",
+        const { error: historyError } = await supabase.from("material_history").insert({
+          material_pn: normalizedPn,
+          acao: "EDIÇÃO DE CADASTRO",
+          usuario_nome: actor.nome,
+          usuario_matricula: actor.matricula,
+          detalhe: `Material ${normalizedPn} atualizado.`,
+          observacao: newMaterial.observacao.trim(),
+          foto: newMaterial.foto || "",
+          data: new Date().toISOString(),
+        });
+
+        if (historyError) throw historyError;
+      } else {
+        const { error } = await supabase.from("materials").insert({
+          ...payload,
+          criado_em: new Date().toISOString(),
+        });
+        if (error) throw error;
+
+        const { error: historyError } = await supabase.from("material_history").insert({
+          material_pn: normalizedPn,
+          acao: "CADASTRO",
+          usuario_nome: actor.nome,
+          usuario_matricula: actor.matricula,
+          detalhe: `Material ${normalizedPn} cadastrado.`,
+          observacao: newMaterial.observacao.trim(),
+          foto: newMaterial.foto || "",
+          data: new Date().toISOString(),
+        });
+
+        if (historyError) throw historyError;
       }
-    );
 
-    setMaterials((prev) => [...prev, material]);
-    resetMaterialForm();
+      resetMaterialForm();
+      await loadCloudData();
+    } catch (error) {
+      console.error(error);
+      window.alert(error.message || "Erro ao salvar material.");
+    }
   }
 
   function handleEditMaterial(item) {
@@ -1155,12 +1223,29 @@ export default function App() {
     });
   }
 
-  function deleteMaterial(pn) {
+  async function deleteMaterial(pn) {
+    if (!supabase) return;
+
     const confirmed = window.confirm(`Deseja excluir o material ${pn}?`);
     if (!confirmed) return;
-    setMaterials((prev) => prev.filter((item) => item.pn !== pn));
-    if (selectedMaterialPn === pn) setSelectedMaterialPn("");
-    if (editingPn === pn) resetMaterialForm();
+
+    try {
+      const { error: historyError } = await supabase
+        .from("material_history")
+        .delete()
+        .eq("material_pn", pn);
+      if (historyError) throw historyError;
+
+      const { error } = await supabase.from("materials").delete().eq("pn", pn);
+      if (error) throw error;
+
+      if (selectedMaterialPn === pn) setSelectedMaterialPn("");
+      if (editingPn === pn) resetMaterialForm();
+      await loadCloudData();
+    } catch (error) {
+      console.error(error);
+      window.alert(error.message || "Erro ao excluir material.");
+    }
   }
 
   function handleInventarioLogin() {
@@ -1298,7 +1383,8 @@ export default function App() {
     window.alert("Item adicionado ao inventário atual.");
   }
 
-  function registerMovement() {
+  async function registerMovement() {
+    if (!supabase) return;
     if (!matchedMovementMaterial) {
       window.alert("PN não encontrado na base de materiais.");
       return;
@@ -1320,62 +1406,71 @@ export default function App() {
       return;
     }
 
-    const movementDate = movementForm.data ? new Date(movementForm.data).toISOString() : new Date().toISOString();
+    const movementDate = movementForm.data
+      ? new Date(movementForm.data).toISOString()
+      : new Date().toISOString();
 
-    const movement = {
-      id: createId(),
-      tipo: movementForm.tipo,
-      pn: matchedMovementMaterial.pn,
-      descricao: matchedMovementMaterial.descricao,
-      quantidade: quantity,
-      quantidadeAntes: beforeQty,
-      quantidadeDepois: afterQty,
-      observacao: movementForm.observacao.trim(),
-      foto: movementForm.foto || "",
-      data: movementDate,
-      usuarioNome: actor.nome,
-      usuarioMatricula: actor.matricula,
-    };
+    try {
+      const { error: materialError } = await supabase
+        .from("materials")
+        .update({
+          quantidade: afterQty,
+          atualizado_em: new Date().toISOString(),
+        })
+        .eq("pn", matchedMovementMaterial.pn);
+      if (materialError) throw materialError;
 
-    setMovements((prev) => [movement, ...prev]);
+      const { error: movementError } = await supabase.from("movements").insert({
+        tipo: movementForm.tipo,
+        pn: matchedMovementMaterial.pn,
+        descricao: matchedMovementMaterial.descricao,
+        quantidade: quantity,
+        quantidade_antes: beforeQty,
+        quantidade_depois: afterQty,
+        observacao: movementForm.observacao.trim(),
+        foto: movementForm.foto || "",
+        data: movementDate,
+        usuario_nome: actor.nome,
+        usuario_matricula: actor.matricula,
+      });
+      if (movementError) throw movementError;
 
-    setMaterials((prev) =>
-      prev.map((item) => {
-        if (item.pn !== matchedMovementMaterial.pn) return item;
-        return appendHistoryToMaterial(
-          {
-            ...item,
-            quantidade: afterQty,
-          },
-          {
-            acao: movementForm.tipo,
-            usuarioNome: actor.nome,
-            usuarioMatricula: actor.matricula,
-            data: movementDate,
-            detalhe: `${movementForm.tipo} de ${quantity} unidade(s). Antes: ${beforeQty}. Depois: ${afterQty}.`,
-            observacao: movementForm.observacao.trim(),
-            foto: movementForm.foto || "",
-          }
-        );
-      })
-    );
+      const { error: historyError } = await supabase.from("material_history").insert({
+        material_pn: matchedMovementMaterial.pn,
+        acao: movementForm.tipo,
+        usuario_nome: actor.nome,
+        usuario_matricula: actor.matricula,
+        detalhe: `${movementForm.tipo} de ${quantity} unidade(s). Antes: ${beforeQty}. Depois: ${afterQty}.`,
+        observacao: movementForm.observacao.trim(),
+        foto: movementForm.foto || "",
+        data: movementDate,
+      });
+      if (historyError) throw historyError;
 
-    setMovementForm({
-      tipo: "SAÍDA",
-      pn: "",
-      quantidade: "",
-      observacao: "",
-      foto: "",
-      data: new Date().toISOString().slice(0, 16),
-    });
+      setMovementForm({
+        tipo: "SAÍDA",
+        pn: "",
+        quantidade: "",
+        observacao: "",
+        foto: "",
+        data: new Date().toISOString().slice(0, 16),
+      });
+
+      await loadCloudData();
+    } catch (error) {
+      console.error(error);
+      window.alert(error.message || "Erro ao salvar movimentação.");
+    }
   }
 
-  function importCsvFile(event) {
+  async function importCsvFile(event) {
+    if (!supabase) return;
+
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const parsed = parseCsvText(String(reader.result || ""));
       if (!parsed.length) {
         window.alert("Nenhum item válido encontrado no CSV.");
@@ -1383,26 +1478,44 @@ export default function App() {
       }
 
       const actor = authState.materiais || { nome: "Sistema", matricula: "-" };
-      const prepared = parsed.map((material) =>
-        appendHistoryToMaterial(material, {
-          acao: "IMPORTAÇÃO CSV",
-          usuarioNome: actor.nome,
-          usuarioMatricula: actor.matricula,
-          data: new Date().toISOString(),
-          detalhe: `Material ${material.pn} importado via CSV.`,
-          observacao: material.observacao || "",
-          foto: "",
-        })
-      );
 
-      setMaterials((prev) => {
-        const map = new Map(prev.map((item) => [normalizeText(item.pn), item]));
-        prepared.forEach((item) => map.set(normalizeText(item.pn), item));
-        return Array.from(map.values());
-      });
+      try {
+        for (const material of parsed) {
+          const { error } = await supabase.from("materials").upsert(
+            {
+              pn: material.pn,
+              descricao: material.descricao,
+              localizacao: material.localizacao || "",
+              quantidade: Number(material.quantidade || 0),
+              observacao: material.observacao || "",
+              status: material.status || "IDENTIFICADO",
+              foto: material.foto || "",
+              atualizado_em: new Date().toISOString(),
+            },
+            { onConflict: "pn" }
+          );
+          if (error) throw error;
 
-      if (csvInputRef.current) csvInputRef.current.value = "";
-      window.alert(`${prepared.length} material(is) importado(s) com sucesso.`);
+          const { error: historyError } = await supabase.from("material_history").insert({
+            material_pn: material.pn,
+            acao: "IMPORTAÇÃO CSV",
+            usuario_nome: actor.nome,
+            usuario_matricula: actor.matricula,
+            detalhe: `Material ${material.pn} importado via CSV.`,
+            observacao: material.observacao || "",
+            foto: material.foto || "",
+            data: new Date().toISOString(),
+          });
+          if (historyError) throw historyError;
+        }
+
+        if (csvInputRef.current) csvInputRef.current.value = "";
+        await loadCloudData();
+        window.alert(`${parsed.length} material(is) importado(s) com sucesso.`);
+      } catch (error) {
+        console.error(error);
+        window.alert(error.message || "Erro ao importar CSV.");
+      }
     };
     reader.readAsText(file, "utf-8");
   }
@@ -1460,6 +1573,34 @@ export default function App() {
       setSelectedMaterialPn(filteredMaterials[0]?.pn || "");
     }
   }, [filteredMaterials, selectedMaterialPn]);
+
+  if (isLoadingCloud) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#E8EDF5",
+          fontFamily: 'Inter, sans-serif',
+        }}
+      >
+        <div
+          style={{
+            background: "white",
+            border: "1px solid #e5e7eb",
+            borderRadius: 16,
+            padding: 24,
+            boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
+            fontWeight: 700,
+          }}
+        >
+          Carregando dados do Orbisys...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -1541,7 +1682,7 @@ export default function App() {
               }}
             >
               <div style={{ fontWeight: 800 }}>ERP</div>
-              <div style={{ marginTop: 4 }}>v2.0</div>
+              <div style={{ marginTop: 4 }}>v3.0</div>
             </div>
           </div>
 
@@ -1647,6 +1788,22 @@ export default function App() {
         </aside>
 
         <main style={{ minWidth: 0 }}>
+          {cloudError ? (
+            <div
+              style={{
+                background: "#fee2e2",
+                color: "#991b1b",
+                border: "1px solid #fecaca",
+                borderRadius: 14,
+                padding: 16,
+                marginBottom: 16,
+                fontWeight: 700,
+              }}
+            >
+              {cloudError}
+            </div>
+          ) : null}
+
           <div
             style={{
               background: "white",
@@ -1699,7 +1856,7 @@ export default function App() {
                   {[
                     `Base ativa: ${materials.length} materiais`,
                     `Inventários: ${inventories.length}`,
-                    `Módulo atual: ${activeTab.toUpperCase()}`
+                    `Módulo atual: ${activeTab.toUpperCase()}`,
                   ].map((item) => (
                     <div
                       key={item}
@@ -1717,12 +1874,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gap: 12,
-                }}
-              >
+              <div style={{ display: "grid", gap: 12 }}>
                 {[
                   ["ENTRADAS", currentMonthEntries, currentMonthLabel],
                   ["SAÍDAS", currentMonthOutputs, currentMonthLabel],
@@ -1762,30 +1914,10 @@ export default function App() {
                       gap: 18,
                     }}
                   >
-                    <StatCard
-                      title="Materiais cadastrados"
-                      value={materials.length}
-                      subtitle="Base total cadastrada"
-                      icon="📦"
-                    />
-                    <StatCard
-                      title="Inventários salvos"
-                      value={inventories.length}
-                      subtitle="Histórico de contagens"
-                      icon="📝"
-                    />
-                    <StatCard
-                      title="Entradas no mês"
-                      value={currentMonthEntries}
-                      subtitle={currentMonthLabel}
-                      icon="⬇️"
-                    />
-                    <StatCard
-                      title="Saídas no mês"
-                      value={currentMonthOutputs}
-                      subtitle={currentMonthLabel}
-                      icon="⬆️"
-                    />
+                    <StatCard title="Materiais cadastrados" value={materials.length} subtitle="Base total cadastrada" icon="📦" />
+                    <StatCard title="Inventários salvos" value={inventories.length} subtitle="Histórico de contagens" icon="📝" />
+                    <StatCard title="Entradas no mês" value={currentMonthEntries} subtitle={currentMonthLabel} icon="⬇️" />
+                    <StatCard title="Saídas no mês" value={currentMonthOutputs} subtitle={currentMonthLabel} icon="⬆️" />
                   </div>
 
                   <div
@@ -1795,26 +1927,9 @@ export default function App() {
                       gap: 18,
                     }}
                   >
-                    <QuickAction
-                      title="Pesquisar material"
-                      text="Encontre rápido por PN, descrição, localização ou observação."
-                      buttonText="Abrir pesquisa"
-                      onClick={() => setActiveTab("pesquisa")}
-                    />
-
-                    <QuickAction
-                      title="Registrar entrada ou saída"
-                      text="Lance movimentações do mês com quantidade, foto, data e usuário responsável."
-                      buttonText="Abrir movimentação"
-                      onClick={() => setActiveTab("movimentacao")}
-                    />
-
-                    <QuickAction
-                      title="Criar ou abrir inventário"
-                      text="Monte um novo inventário, continue um salvo ou adicione item pesquisado."
-                      buttonText="Abrir inventário"
-                      onClick={() => setActiveTab("inventario")}
-                    />
+                    <QuickAction title="Pesquisar material" text="Encontre rápido por PN, descrição, localização ou observação." buttonText="Abrir pesquisa" onClick={() => setActiveTab("pesquisa")} />
+                    <QuickAction title="Registrar entrada ou saída" text="Lance movimentações do mês com quantidade, foto, data e usuário responsável." buttonText="Abrir movimentação" onClick={() => setActiveTab("movimentacao")} />
+                    <QuickAction title="Criar ou abrir inventário" text="Monte um novo inventário, continue um salvo ou adicione item pesquisado." buttonText="Abrir inventário" onClick={() => setActiveTab("inventario")} />
                   </div>
 
                   <Panel title={`Resumo de movimentações de ${currentMonthLabel}`}>
@@ -1840,50 +1955,21 @@ export default function App() {
                             >
                               <div>
                                 <div style={{ fontWeight: 800 }}>{item.descricao}</div>
-                                <div style={{ color: "#6b7280", marginTop: 4 }}>
-                                  PN: {item.pn}
-                                </div>
-                                <div style={{ color: "#6b7280", marginTop: 4 }}>
-                                  Usuário: {item.usuarioNome} • {formatDateTime(item.data)}
-                                </div>
+                                <div style={{ color: "#6b7280", marginTop: 4 }}>PN: {item.pn}</div>
+                                <div style={{ color: "#6b7280", marginTop: 4 }}>Usuário: {item.usuarioNome} • {formatDateTime(item.data)}</div>
                               </div>
-
                               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <span
-                                  style={{
-                                    ...movementTypeStyle(item.tipo),
-                                    padding: "6px 12px",
-                                    borderRadius: 999,
-                                    fontSize: 12,
-                                    fontWeight: 800,
-                                  }}
-                                >
-                                  {item.tipo}
-                                </span>
-                                <div style={{ fontWeight: 900, fontSize: 20 }}>
-                                  {item.quantidade}
-                                </div>
+                                <span style={{ ...movementTypeStyle(item.tipo), padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 800 }}>{item.tipo}</span>
+                                <div style={{ fontWeight: 900, fontSize: 20 }}>{item.quantidade}</div>
                               </div>
                             </div>
                           ))}
-
                         <div style={{ marginTop: 6 }}>
-                          <ActionButton kind="secondary" onClick={() => setActiveTab("movimentacao")}>
-                            Ver todas as movimentações do mês
-                          </ActionButton>
+                          <ActionButton kind="secondary" onClick={() => setActiveTab("movimentacao")}>Ver todas as movimentações do mês</ActionButton>
                         </div>
                       </div>
                     ) : (
-                      <div
-                        style={{
-                          border: "1px dashed #cbd5e1",
-                          borderRadius: 12,
-                          padding: 28,
-                          textAlign: "center",
-                          color: "#64748b",
-                          background: "#f8fafc",
-                        }}
-                      >
+                      <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 28, textAlign: "center", color: "#64748b", background: "#f8fafc" }}>
                         Ainda não existem movimentações registradas neste mês.
                       </div>
                     )}
@@ -1895,248 +1981,54 @@ export default function App() {
                 <div style={{ display: "grid", gridTemplateColumns: "0.9fr 1.1fr", gap: 20 }}>
                   <Panel
                     title="Pesquisar materiais"
-                    right={
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <ActionButton kind="secondary" onClick={exportMaterialsCsv}>
-                          Exportar CSV
-                        </ActionButton>
-                      </div>
-                    }
+                    right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><ActionButton kind="secondary" onClick={exportMaterialsCsv}>Exportar CSV</ActionButton><ActionButton kind="secondary" onClick={loadCloudData}>Atualizar nuvem</ActionButton></div>}
                   >
                     <div style={{ display: "grid", gap: 14 }}>
-                      <TextInput
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Pesquise por PN, descrição, localização..."
-                      />
-
+                      <TextInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquise por PN, descrição, localização..." />
                       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {filteredMaterials.map((item) => (
                           <button
                             key={item.pn}
                             onClick={() => setSelectedMaterialPn(item.pn)}
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "64px 1fr",
-                              gap: 12,
-                              alignItems: "center",
-                              borderRadius: 12,
-                              border:
-                                selectedMaterialPn === item.pn
-                                  ? `2px solid ${CAT_YELLOW}`
-                                  : "1px solid #e5e7eb",
-                              background: "white",
-                              padding: 12,
-                              cursor: "pointer",
-                              textAlign: "left",
-                            }}
+                            style={{ display: "grid", gridTemplateColumns: "64px 1fr", gap: 12, alignItems: "center", borderRadius: 12, border: selectedMaterialPn === item.pn ? `2px solid ${CAT_YELLOW}` : "1px solid #e5e7eb", background: "white", padding: 12, cursor: "pointer", textAlign: "left" }}
                           >
-                            <div
-                              style={{
-                                borderRadius: 10,
-                                overflow: "hidden",
-                                background: "#EEF2F7",
-                                width: 64,
-                                height: 64,
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              {item.foto ? (
-                                <img
-                                  src={item.foto}
-                                  alt={item.descricao}
-                                  style={{
-                                    width: "100%",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                  }}
-                                />
-                              ) : (
-                                <span style={{ color: "#6b7280" }}>📦</span>
-                              )}
+                            <div style={{ borderRadius: 10, overflow: "hidden", background: "#EEF2F7", width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              {item.foto ? <img src={item.foto} alt={item.descricao} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "#6b7280" }}>📦</span>}
                             </div>
-
                             <div>
                               <div style={{ fontWeight: 700 }}>{item.descricao}</div>
-                              <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>
-                                PN: {item.pn}
-                              </div>
-                              <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>
-                                Loc.: {item.localizacao || "-"}
-                              </div>
+                              <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>PN: {item.pn}</div>
+                              <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>Loc.: {item.localizacao || "-"}</div>
                             </div>
                           </button>
                         ))}
-
-                        {!filteredMaterials.length && (
-                          <div
-                            style={{
-                              border: "1px dashed #cbd5e1",
-                              borderRadius: 12,
-                              padding: 30,
-                              textAlign: "center",
-                              color: "#64748b",
-                            }}
-                          >
-                            Nenhum material encontrado.
-                          </div>
-                        )}
+                        {!filteredMaterials.length && <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 30, textAlign: "center", color: "#64748b" }}>Nenhum material encontrado.</div>}
                       </div>
                     </div>
                   </Panel>
 
                   <Panel
                     title="Detalhes do material"
-                    right={
-                      selectedMaterial ? (
-                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                          <ActionButton
-                            kind="secondary"
-                            onClick={() => {
-                              handleEditMaterial(selectedMaterial);
-                            }}
-                          >
-                            Editar material
-                          </ActionButton>
-
-                          {canAccessInventario && currentInventory ? (
-                            <ActionButton kind="success" onClick={addSearchedItemToInventory}>
-                              Adicionar ao inventário
-                            </ActionButton>
-                          ) : null}
-                        </div>
-                      ) : null
-                    }
+                    right={selectedMaterial ? <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><ActionButton kind="secondary" onClick={() => handleEditMaterial(selectedMaterial)}>Editar material</ActionButton>{canAccessInventario && currentInventory ? <ActionButton kind="success" onClick={addSearchedItemToInventory}>Adicionar ao inventário</ActionButton> : null}</div> : null}
                   >
                     {selectedMaterial ? (
                       <div style={{ display: "grid", gap: 14 }}>
-                        <div
-                          style={{
-                            display: "grid",
-                            gridTemplateColumns: "280px 1fr",
-                            gap: 18,
-                            alignItems: "start",
-                          }}
-                        >
-                          <div
-                            style={{
-                              borderRadius: 12,
-                              overflow: "hidden",
-                              border: "1px solid #e5e7eb",
-                              background: "#EEF2F7",
-                              minHeight: 260,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {selectedMaterial.foto ? (
-                              <img
-                                src={selectedMaterial.foto}
-                                alt={selectedMaterial.descricao}
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                }}
-                              />
-                            ) : (
-                              <span style={{ color: "#6b7280", fontSize: 48 }}>📦</span>
-                            )}
+                        <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 18, alignItems: "start" }}>
+                          <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid #e5e7eb", background: "#EEF2F7", minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {selectedMaterial.foto ? <img src={selectedMaterial.foto} alt={selectedMaterial.descricao} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "#6b7280", fontSize: 48 }}>📦</span>}
                           </div>
-
                           <div style={{ display: "grid", gap: 12 }}>
                             <div>
                               <div style={{ fontSize: 12, color: "#6b7280" }}>Descrição</div>
-                              <div style={{ fontWeight: 800, fontSize: 24, marginTop: 4 }}>
-                                {selectedMaterial.descricao}
-                              </div>
+                              <div style={{ fontWeight: 800, fontSize: 24, marginTop: 4 }}>{selectedMaterial.descricao}</div>
                             </div>
-
-                            <div
-                              style={{
-                                display: "grid",
-                                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                                gap: 12,
-                              }}
-                            >
-                              <div
-                                style={{
-                                  border: "1px solid #e5e7eb",
-                                  borderRadius: 10,
-                                  padding: 14,
-                                }}
-                              >
-                                <div style={{ fontSize: 12, color: "#6b7280" }}>PN</div>
-                                <div style={{ fontWeight: 700, marginTop: 6 }}>
-                                  {selectedMaterial.pn}
-                                </div>
-                              </div>
-
-                              <div
-                                style={{
-                                  border: "1px solid #e5e7eb",
-                                  borderRadius: 10,
-                                  padding: 14,
-                                }}
-                              >
-                                <div style={{ fontSize: 12, color: "#6b7280" }}>Quantidade</div>
-                                <div style={{ fontWeight: 700, marginTop: 6 }}>
-                                  {selectedMaterial.quantidade ?? 0}
-                                </div>
-                              </div>
-
-                              <div
-                                style={{
-                                  border: "1px solid #e5e7eb",
-                                  borderRadius: 10,
-                                  padding: 14,
-                                }}
-                              >
-                                <div style={{ fontSize: 12, color: "#6b7280" }}>Localização</div>
-                                <div style={{ fontWeight: 700, marginTop: 6 }}>
-                                  {selectedMaterial.localizacao || "-"}
-                                </div>
-                              </div>
-
-                              <div
-                                style={{
-                                  border: "1px solid #e5e7eb",
-                                  borderRadius: 10,
-                                  padding: 14,
-                                }}
-                              >
-                                <div style={{ fontSize: 12, color: "#6b7280" }}>Status</div>
-                                <div style={{ marginTop: 6 }}>
-                                  <span
-                                    style={{
-                                      ...statusStyle(selectedMaterial.status),
-                                      padding: "6px 10px",
-                                      borderRadius: 999,
-                                      fontWeight: 700,
-                                      fontSize: 12,
-                                    }}
-                                  >
-                                    {selectedMaterial.status}
-                                  </span>
-                                </div>
-                              </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
+                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>PN</div><div style={{ fontWeight: 700, marginTop: 6 }}>{selectedMaterial.pn}</div></div>
+                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Quantidade</div><div style={{ fontWeight: 700, marginTop: 6 }}>{selectedMaterial.quantidade ?? 0}</div></div>
+                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Localização</div><div style={{ fontWeight: 700, marginTop: 6 }}>{selectedMaterial.localizacao || "-"}</div></div>
+                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Status</div><div style={{ marginTop: 6 }}><span style={{ ...statusStyle(selectedMaterial.status), padding: "6px 10px", borderRadius: 999, fontWeight: 700, fontSize: 12 }}>{selectedMaterial.status}</span></div></div>
                             </div>
-
-                            <div
-                              style={{
-                                border: "1px solid #e5e7eb",
-                                borderRadius: 10,
-                                padding: 14,
-                              }}
-                            >
-                              <div style={{ fontSize: 12, color: "#6b7280" }}>Observação</div>
-                              <div style={{ marginTop: 6, fontWeight: 600 }}>
-                                {selectedMaterial.observacao || "Sem observações"}
-                              </div>
-                            </div>
+                            <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Observação</div><div style={{ marginTop: 6, fontWeight: 600 }}>{selectedMaterial.observacao || "Sem observações"}</div></div>
                           </div>
                         </div>
 
@@ -2146,279 +2038,75 @@ export default function App() {
                               [...selectedMaterial.historico]
                                 .sort((a, b) => new Date(b.data) - new Date(a.data))
                                 .map((item) => (
-                                  <div
-                                    key={item.id}
-                                    style={{
-                                      border: "1px solid #e5e7eb",
-                                      borderRadius: 10,
-                                      padding: 14,
-                                      background: "#fafafa",
-                                    }}
-                                  >
-                                    <div
-                                      style={{
-                                        display: "flex",
-                                        gap: 10,
-                                        alignItems: "center",
-                                        flexWrap: "wrap",
-                                      }}
-                                    >
-                                      <span
-                                        style={{
-                                          ...movementTypeStyle(item.acao),
-                                          padding: "4px 10px",
-                                          borderRadius: 999,
-                                          fontSize: 12,
-                                          fontWeight: 800,
-                                        }}
-                                      >
-                                        {item.acao}
-                                      </span>
-
+                                  <div key={item.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, background: "#fafafa" }}>
+                                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                                      <span style={{ ...movementTypeStyle(item.acao), padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 800 }}>{item.acao}</span>
                                       <div style={{ fontWeight: 700 }}>{item.usuarioNome}</div>
-                                      <div style={{ color: "#6b7280" }}>
-                                        Matrícula: {item.usuarioMatricula || "-"}
-                                      </div>
+                                      <div style={{ color: "#6b7280" }}>Matrícula: {item.usuarioMatricula || "-"}</div>
                                     </div>
-
-                                    <div style={{ marginTop: 8, color: "#6b7280" }}>
-                                      {formatDateTime(item.data)}
-                                    </div>
-
-                                    <div style={{ marginTop: 8, fontWeight: 600 }}>
-                                      {item.detalhe || "-"}
-                                    </div>
-
-                                    {item.observacao ? (
-                                      <div style={{ marginTop: 8, color: "#6b7280" }}>
-                                        Obs.: {item.observacao}
-                                      </div>
-                                    ) : null}
-
-                                    {item.foto ? (
-                                      <div
-                                        style={{
-                                          marginTop: 12,
-                                          borderRadius: 10,
-                                          overflow: "hidden",
-                                          border: "1px solid #e5e7eb",
-                                        }}
-                                      >
-                                        <img
-                                          src={item.foto}
-                                          alt="Histórico"
-                                          style={{
-                                            width: "100%",
-                                            maxHeight: 220,
-                                            objectFit: "cover",
-                                          }}
-                                        />
-                                      </div>
-                                    ) : null}
+                                    <div style={{ marginTop: 8, color: "#6b7280" }}>{formatDateTime(item.data)}</div>
+                                    <div style={{ marginTop: 8, fontWeight: 600 }}>{item.detalhe || "-"}</div>
+                                    {item.observacao ? <div style={{ marginTop: 8, color: "#6b7280" }}>Obs.: {item.observacao}</div> : null}
+                                    {item.foto ? <div style={{ marginTop: 12, borderRadius: 10, overflow: "hidden", border: "1px solid #e5e7eb" }}><img src={item.foto} alt="Histórico" style={{ width: "100%", maxHeight: 220, objectFit: "cover" }} /></div> : null}
                                   </div>
                                 ))
                             ) : (
-                              <div
-                                style={{
-                                  border: "1px dashed #cbd5e1",
-                                  borderRadius: 12,
-                                  padding: 24,
-                                  textAlign: "center",
-                                  color: "#64748b",
-                                }}
-                              >
-                                Nenhum histórico ainda.
-                              </div>
+                              <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 24, textAlign: "center", color: "#64748b" }}>Nenhum histórico ainda.</div>
                             )}
                           </div>
                         </Panel>
                       </div>
                     ) : (
-                      <div
-                        style={{
-                          border: "1px dashed #cbd5e1",
-                          borderRadius: 14,
-                          background: "#f8fafc",
-                          padding: 40,
-                          textAlign: "center",
-                          color: "#64748b",
-                        }}
-                      >
-                        Selecione um material na lista para ver os detalhes.
-                      </div>
+                      <div style={{ border: "1px dashed #cbd5e1", borderRadius: 14, background: "#f8fafc", padding: 40, textAlign: "center", color: "#64748b" }}>Selecione um material na lista para ver os detalhes.</div>
                     )}
                   </Panel>
                 </div>
               )}
 
-              {activeTab === "inventario" && !canAccessInventario && (
-                <LoginGate
-                  title="Área de Inventário"
-                  subtitle="Acesso restrito"
-                  onLogin={handleInventarioLogin}
-                  loginForm={inventarioLoginForm}
-                  setLoginForm={setInventarioLoginForm}
-                  errorMessage={inventarioLoginError}
-                />
-              )}
+              {activeTab === "inventario" && !canAccessInventario && <LoginGate title="Área de Inventário" subtitle="Acesso restrito" onLogin={handleInventarioLogin} loginForm={inventarioLoginForm} setLoginForm={setInventarioLoginForm} errorMessage={inventarioLoginError} />}
 
               {activeTab === "inventario" && canAccessInventario && (
                 <Panel
                   title="Controle de inventário"
-                  right={
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                      <div
-                        style={{
-                          background: "#EEF2F7",
-                          borderRadius: 10,
-                          padding: "10px 14px",
-                          fontWeight: 700,
-                        }}
-                      >
-                        👤 {authState.inventario?.nome}
-                      </div>
-                      <ActionButton kind="secondary" onClick={() => logoutArea("inventario")}>
-                        Sair
-                      </ActionButton>
-                    </div>
-                  }
+                  right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><div style={{ background: "#EEF2F7", borderRadius: 10, padding: "10px 14px", fontWeight: 700 }}>👤 {authState.inventario?.nome}</div><ActionButton kind="secondary" onClick={() => logoutArea("inventario")}>Sair</ActionButton></div>}
                 >
                   {!currentInventory ? (
                     <div style={{ display: "grid", gap: 18 }}>
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr auto",
-                          gap: 12,
-                        }}
-                      >
-                        <TextInput
-                          value={newInventoryName}
-                          onChange={(e) => setNewInventoryName(e.target.value)}
-                          placeholder="Ex.: Inventário Abril 2026"
-                          style={{ minHeight: 52 }}
-                        />
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12 }}>
+                        <TextInput value={newInventoryName} onChange={(e) => setNewInventoryName(e.target.value)} placeholder="Ex.: Inventário Abril 2026" style={{ minHeight: 52 }} />
                         <ActionButton onClick={startNewInventory}>Criar inventário</ActionButton>
                       </div>
-
                       <Panel title="Inventários salvos">
                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                          {inventories.length ? (
-                            inventories.map((inv) => (
-                              <div
-                                key={inv.id}
-                                style={{
-                                  border: "1px solid #e5e7eb",
-                                  borderRadius: 10,
-                                  padding: 14,
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  alignItems: "center",
-                                  gap: 12,
-                                  flexWrap: "wrap",
-                                }}
-                              >
-                                <div>
-                                  <div style={{ fontWeight: 800 }}>{inv.nome}</div>
-                                  <div style={{ color: "#6b7280", marginTop: 4 }}>
-                                    Criado por: {inv.criadoPor || "-"}
-                                  </div>
-                                  <div style={{ color: "#6b7280", marginTop: 4 }}>
-                                    Atualizado em: {formatDateTime(inv.atualizadoEm)}
-                                  </div>
-                                  <div style={{ color: "#6b7280", marginTop: 4 }}>
-                                    Itens: {(inv.itens || []).length}
-                                  </div>
-                                </div>
-
-                                <ActionButton kind="secondary" onClick={() => openInventory(inv)}>
-                                  Abrir inventário
-                                </ActionButton>
+                          {inventories.length ? inventories.map((inv) => (
+                            <div key={inv.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                              <div>
+                                <div style={{ fontWeight: 800 }}>{inv.nome}</div>
+                                <div style={{ color: "#6b7280", marginTop: 4 }}>Criado por: {inv.criadoPor || "-"}</div>
+                                <div style={{ color: "#6b7280", marginTop: 4 }}>Atualizado em: {formatDateTime(inv.atualizadoEm)}</div>
+                                <div style={{ color: "#6b7280", marginTop: 4 }}>Itens: {(inv.itens || []).length}</div>
                               </div>
-                            ))
-                          ) : (
-                            <div
-                              style={{
-                                border: "1px dashed #cbd5e1",
-                                borderRadius: 12,
-                                padding: 24,
-                                textAlign: "center",
-                                color: "#64748b",
-                              }}
-                            >
-                              Nenhum inventário salvo.
+                              <ActionButton kind="secondary" onClick={() => openInventory(inv)}>Abrir inventário</ActionButton>
                             </div>
-                          )}
+                          )) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 24, textAlign: "center", color: "#64748b" }}>Nenhum inventário salvo.</div>}
                         </div>
                       </Panel>
                     </div>
                   ) : (
                     <div style={{ display: "grid", gap: 18 }}>
-                      <div
-                        style={{
-                          border: "1px solid #e5e7eb",
-                          borderRadius: 12,
-                          padding: 18,
-                          background: "#f8fafc",
-                        }}
-                      >
+                      <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 18, background: "#f8fafc" }}>
                         <div style={{ fontSize: 12, color: "#6b7280" }}>Inventário atual</div>
-                        <div style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}>
-                          {currentInventory.nome}
-                        </div>
-                        <div style={{ color: "#6b7280", marginTop: 6 }}>
-                          Criado por {currentInventory.criadoPor} em {" "}
-                          {formatDateTime(currentInventory.criadoEm)}
-                        </div>
+                        <div style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}>{currentInventory.nome}</div>
+                        <div style={{ color: "#6b7280", marginTop: 6 }}>Criado por {currentInventory.criadoPor} em {formatDateTime(currentInventory.criadoEm)}</div>
                       </div>
-
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <ActionButton onClick={addManualItemToInventory}>
-                          Adicionar item manual
-                        </ActionButton>
-                        <ActionButton kind="secondary" onClick={saveCurrentInventory}>
-                          Salvar inventário
-                        </ActionButton>
-                        <ActionButton kind="success" onClick={finishCurrentInventory}>
-                          Finalizar inventário
-                        </ActionButton>
-                        <ActionButton
-                          kind="danger"
-                          onClick={() => {
-                            const confirmed = window.confirm(
-                              "Deseja fechar o inventário atual sem apagar os dados salvos?"
-                            );
-                            if (!confirmed) return;
-                            setCurrentInventory(null);
-                          }}
-                        >
-                          Fechar inventário
-                        </ActionButton>
+                        <ActionButton onClick={addManualItemToInventory}>Adicionar item manual</ActionButton>
+                        <ActionButton kind="secondary" onClick={saveCurrentInventory}>Salvar inventário</ActionButton>
+                        <ActionButton kind="success" onClick={finishCurrentInventory}>Finalizar inventário</ActionButton>
+                        <ActionButton kind="danger" onClick={() => { const confirmed = window.confirm("Deseja fechar o inventário atual sem apagar os dados salvos?"); if (!confirmed) return; setCurrentInventory(null); }}>Fechar inventário</ActionButton>
                       </div>
-
                       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                        {(currentInventory.itens || []).length ? (
-                          currentInventory.itens.map((item) => (
-                            <InventoryItemRow
-                              key={item.id}
-                              item={item}
-                              onChange={(nextItem) => updateInventoryItem(item.id, nextItem)}
-                              onRemove={() => removeInventoryItem(item.id)}
-                            />
-                          ))
-                        ) : (
-                          <div
-                            style={{
-                              border: "1px dashed #cbd5e1",
-                              borderRadius: 12,
-                              padding: 30,
-                              textAlign: "center",
-                              color: "#64748b",
-                            }}
-                          >
-                            Nenhum item no inventário atual.
-                          </div>
-                        )}
+                        {(currentInventory.itens || []).length ? currentInventory.itens.map((item) => <InventoryItemRow key={item.id} item={item} onChange={(nextItem) => updateInventoryItem(item.id, nextItem)} onRemove={() => removeInventoryItem(item.id)} />) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 30, textAlign: "center", color: "#64748b" }}>Nenhum item no inventário atual.</div>}
                       </div>
                     </div>
                   )}
@@ -2429,676 +2117,116 @@ export default function App() {
                 <Panel title="Histórico geral de movimentações e ações">
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {materials.some((item) => (item.historico || []).length > 0) ? (
-                      materials
-                        .flatMap((material) =>
-                          (material.historico || []).map((hist) => ({
-                            ...hist,
-                            pn: material.pn,
-                            descricao: material.descricao,
-                          }))
-                        )
-                        .sort((a, b) => new Date(b.data) - new Date(a.data))
-                        .map((item) => (
-                          <div
-                            key={item.id}
-                            style={{
-                              border: "1px solid #e5e7eb",
-                              borderRadius: 10,
-                              padding: 14,
-                              background: "white",
-                            }}
-                          >
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: 10,
-                                alignItems: "center",
-                                flexWrap: "wrap",
-                              }}
-                            >
-                              <span
-                                style={{
-                                  ...movementTypeStyle(item.acao),
-                                  padding: "4px 10px",
-                                  borderRadius: 999,
-                                  fontSize: 12,
-                                  fontWeight: 800,
-                                }}
-                              >
-                                {item.acao}
-                              </span>
-
-                              <strong>{item.descricao}</strong>
-                              <span style={{ color: "#6b7280" }}>PN: {item.pn}</span>
-                            </div>
-
-                            <div style={{ marginTop: 8, color: "#6b7280" }}>
-                              {formatDateTime(item.data)}
-                            </div>
-
-                            <div style={{ marginTop: 8, fontWeight: 600 }}>
-                              Usuário: {item.usuarioNome} | Matrícula:{" "}
-                              {item.usuarioMatricula || "-"}
-                            </div>
-
-                            <div style={{ marginTop: 8 }}>{item.detalhe || "-"}</div>
-
-                            {item.observacao ? (
-                              <div style={{ marginTop: 8, color: "#6b7280" }}>
-                                Obs.: {item.observacao}
-                              </div>
-                            ) : null}
+                      materials.flatMap((material) => (material.historico || []).map((hist) => ({ ...hist, pn: material.pn, descricao: material.descricao }))).sort((a, b) => new Date(b.data) - new Date(a.data)).map((item) => (
+                        <div key={item.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, background: "white" }}>
+                          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                            <span style={{ ...movementTypeStyle(item.acao), padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 800 }}>{item.acao}</span>
+                            <strong>{item.descricao}</strong>
+                            <span style={{ color: "#6b7280" }}>PN: {item.pn}</span>
                           </div>
-                        ))
-                    ) : (
-                      <div
-                        style={{
-                          border: "1px dashed #cbd5e1",
-                          borderRadius: 14,
-                          background: "#f8fafc",
-                          padding: 40,
-                          textAlign: "center",
-                          color: "#64748b",
-                        }}
-                      >
-                        Nenhum histórico registrado ainda.
-                      </div>
-                    )}
+                          <div style={{ marginTop: 8, color: "#6b7280" }}>{formatDateTime(item.data)}</div>
+                          <div style={{ marginTop: 8, fontWeight: 600 }}>Usuário: {item.usuarioNome} | Matrícula: {item.usuarioMatricula || "-"}</div>
+                          <div style={{ marginTop: 8 }}>{item.detalhe || "-"}</div>
+                          {item.observacao ? <div style={{ marginTop: 8, color: "#6b7280" }}>Obs.: {item.observacao}</div> : null}
+                        </div>
+                      ))
+                    ) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 14, background: "#f8fafc", padding: 40, textAlign: "center", color: "#64748b" }}>Nenhum histórico registrado ainda.</div>}
                   </div>
                 </Panel>
               )}
 
-              {activeTab === "cadastro" && !canAccessMateriais && (
-                <LoginGate
-                  title="Cadastro de materiais"
-                  subtitle="Login da área de materiais"
-                  onLogin={handleMateriaisLogin}
-                  loginForm={materiaisLoginForm}
-                  setLoginForm={setMateriaisLoginForm}
-                  errorMessage={materiaisLoginError}
-                />
-              )}
+              {activeTab === "cadastro" && !canAccessMateriais && <LoginGate title="Cadastro de materiais" subtitle="Login da área de materiais" onLogin={handleMateriaisLogin} loginForm={materiaisLoginForm} setLoginForm={setMateriaisLoginForm} errorMessage={materiaisLoginError} />}
 
               {activeTab === "cadastro" && canAccessMateriais && (
                 <div style={{ display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 20 }}>
                   <Panel
                     title={editingPn ? "Editar material" : "Cadastrar material"}
-                    right={
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <div
-                          style={{
-                            background: "#EEF2F7",
-                            borderRadius: 10,
-                            padding: "10px 14px",
-                            fontWeight: 700,
-                          }}
-                        >
-                          👤 {authState.materiais?.nome}
-                        </div>
-                        <ActionButton kind="secondary" onClick={() => logoutArea("materiais")}>
-                          Sair
-                        </ActionButton>
-                      </div>
-                    }
+                    right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><div style={{ background: "#EEF2F7", borderRadius: 10, padding: "10px 14px", fontWeight: 700 }}>👤 {authState.materiais?.nome}</div><ActionButton kind="secondary" onClick={() => logoutArea("materiais")}>Sair</ActionButton></div>}
                   >
                     <div style={{ display: "grid", gap: 14 }}>
-                      <div
-                        style={{
-                          background: "#fff7cc",
-                          border: "1px solid #fde68a",
-                          borderRadius: 10,
-                          padding: 14,
-                        }}
-                      >
+                      <div style={{ background: "#fff7cc", border: "1px solid #fde68a", borderRadius: 10, padding: 14 }}>
                         <div style={{ fontWeight: 800 }}>Modelo CSV para importar</div>
-                        <div style={{ color: "#6b7280", marginTop: 6 }}>
-                          Cabeçalho esperado:
-                        </div>
-                        <div
-                          style={{
-                            marginTop: 8,
-                            fontFamily: "monospace",
-                            background: "white",
-                            borderRadius: 12,
-                            padding: 10,
-                            fontSize: 13,
-                          }}
-                        >
-                          {CSV_HEADERS_EXAMPLE}
-                        </div>
-
-                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
-                          <input
-                            ref={csvInputRef}
-                            type="file"
-                            accept=".csv,text/csv"
-                            onChange={importCsvFile}
-                          />
-                        </div>
+                        <div style={{ color: "#6b7280", marginTop: 6 }}>Cabeçalho esperado:</div>
+                        <div style={{ marginTop: 8, fontFamily: "monospace", background: "white", borderRadius: 12, padding: 10, fontSize: 13 }}>{CSV_HEADERS_EXAMPLE}</div>
+                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}><input ref={csvInputRef} type="file" accept=".csv,text/csv" onChange={importCsvFile} /></div>
                       </div>
-
-                      <Field label="PN">
-                        <TextInput
-                          value={newMaterial.pn}
-                          onChange={(e) =>
-                            setNewMaterial((prev) => ({ ...prev, pn: e.target.value }))
-                          }
-                          placeholder="Digite o PN"
-                        />
-                      </Field>
-
-                      <Field label="Descrição">
-                        <TextInput
-                          value={newMaterial.descricao}
-                          onChange={(e) =>
-                            setNewMaterial((prev) => ({
-                              ...prev,
-                              descricao: e.target.value,
-                            }))
-                          }
-                          placeholder="Descrição do material"
-                        />
-                      </Field>
-
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: 12,
-                        }}
-                      >
-                        <Field label="Localização">
-                          <TextInput
-                            value={newMaterial.localizacao}
-                            onChange={(e) =>
-                              setNewMaterial((prev) => ({
-                                ...prev,
-                                localizacao: e.target.value,
-                              }))
-                            }
-                            placeholder="01.02.03.04"
-                          />
-                        </Field>
-
-                        <Field label="Quantidade">
-                          <TextInput
-                            type="number"
-                            value={newMaterial.quantidade}
-                            onChange={(e) =>
-                              setNewMaterial((prev) => ({
-                                ...prev,
-                                quantidade: e.target.value,
-                              }))
-                            }
-                            placeholder="0"
-                          />
-                        </Field>
+                      <Field label="PN"><TextInput value={newMaterial.pn} onChange={(e) => setNewMaterial((prev) => ({ ...prev, pn: e.target.value }))} placeholder="Digite o PN" /></Field>
+                      <Field label="Descrição"><TextInput value={newMaterial.descricao} onChange={(e) => setNewMaterial((prev) => ({ ...prev, descricao: e.target.value }))} placeholder="Descrição do material" /></Field>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        <Field label="Localização"><TextInput value={newMaterial.localizacao} onChange={(e) => setNewMaterial((prev) => ({ ...prev, localizacao: e.target.value }))} placeholder="01.02.03.04" /></Field>
+                        <Field label="Quantidade"><TextInput type="number" value={newMaterial.quantidade} onChange={(e) => setNewMaterial((prev) => ({ ...prev, quantidade: e.target.value }))} placeholder="0" /></Field>
                       </div>
-
-                      <Field label="Status">
-                        <select
-                          value={newMaterial.status}
-                          onChange={(e) =>
-                            setNewMaterial((prev) => ({ ...prev, status: e.target.value }))
-                          }
-                          style={{
-                            width: "100%",
-                            minHeight: 46,
-                            borderRadius: 10,
-                            border: "1px solid #d1d5db",
-                            padding: "12px 14px",
-                            fontSize: 16,
-                            outline: "none",
-                            background: "white",
-                          }}
-                        >
-                          <option value="IDENTIFICADO">IDENTIFICADO</option>
-                          <option value="SEM FOTO">SEM FOTO</option>
-                          <option value="SEM LOCALIZAÇÃO">SEM LOCALIZAÇÃO</option>
-                          <option value="COMPLETO">COMPLETO</option>
-                        </select>
-                      </Field>
-
-                      <Field label="Observação">
-                        <TextArea
-                          rows={3}
-                          value={newMaterial.observacao}
-                          onChange={(e) =>
-                            setNewMaterial((prev) => ({
-                              ...prev,
-                              observacao: e.target.value,
-                            }))
-                          }
-                          placeholder="Observações"
-                        />
-                      </Field>
-
-                      <InventoryPhotoInput
-                        label="Foto do material"
-                        foto={newMaterial.foto}
-                        onChange={(foto) =>
-                          setNewMaterial((prev) => ({ ...prev, foto }))
-                        }
-                      />
-
+                      <Field label="Status"><select value={newMaterial.status} onChange={(e) => setNewMaterial((prev) => ({ ...prev, status: e.target.value }))} style={{ width: "100%", minHeight: 46, borderRadius: 10, border: "1px solid #d1d5db", padding: "12px 14px", fontSize: 16, outline: "none", background: "white" }}><option value="IDENTIFICADO">IDENTIFICADO</option><option value="SEM FOTO">SEM FOTO</option><option value="SEM LOCALIZAÇÃO">SEM LOCALIZAÇÃO</option><option value="COMPLETO">COMPLETO</option></select></Field>
+                      <Field label="Observação"><TextArea rows={3} value={newMaterial.observacao} onChange={(e) => setNewMaterial((prev) => ({ ...prev, observacao: e.target.value }))} placeholder="Observações" /></Field>
+                      <InventoryPhotoInput label="Foto do material" foto={newMaterial.foto} onChange={(foto) => setNewMaterial((prev) => ({ ...prev, foto }))} />
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <ActionButton onClick={saveMaterial}>
-                          {editingPn ? "Atualizar material" : "Salvar material"}
-                        </ActionButton>
-
-                        <ActionButton kind="secondary" onClick={resetMaterialForm}>
-                          Limpar
-                        </ActionButton>
+                        <ActionButton onClick={saveMaterial}>{editingPn ? "Atualizar material" : "Salvar material"}</ActionButton>
+                        <ActionButton kind="secondary" onClick={resetMaterialForm}>Limpar</ActionButton>
                       </div>
                     </div>
                   </Panel>
 
                   <Panel title="Lista de materiais cadastrados">
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      {materials.length ? (
-                        materials.map((item) => (
-                          <MaterialListItem
-                            key={item.pn}
-                            item={item}
-                            onEdit={handleEditMaterial}
-                            onDelete={deleteMaterial}
-                          />
-                        ))
-                      ) : (
-                        <div
-                          style={{
-                            border: "1px dashed #cbd5e1",
-                            borderRadius: 14,
-                            background: "#f8fafc",
-                            padding: 40,
-                            textAlign: "center",
-                            color: "#64748b",
-                          }}
-                        >
-                          Nenhum material cadastrado ainda.
-                        </div>
-                      )}
+                      {materials.length ? materials.map((item) => <MaterialListItem key={item.pn} item={item} onEdit={handleEditMaterial} onDelete={deleteMaterial} />) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 14, background: "#f8fafc", padding: 40, textAlign: "center", color: "#64748b" }}>Nenhum material cadastrado ainda.</div>}
                     </div>
                   </Panel>
                 </div>
               )}
 
-              {activeTab === "movimentacao" && !canAccessMateriais && (
-                <LoginGate
-                  title="Entrada e Saída"
-                  subtitle="Login da área de materiais"
-                  onLogin={handleMateriaisLogin}
-                  loginForm={materiaisLoginForm}
-                  setLoginForm={setMateriaisLoginForm}
-                  errorMessage={materiaisLoginError}
-                />
-              )}
+              {activeTab === "movimentacao" && !canAccessMateriais && <LoginGate title="Entrada e Saída" subtitle="Login da área de materiais" onLogin={handleMateriaisLogin} loginForm={materiaisLoginForm} setLoginForm={setMateriaisLoginForm} errorMessage={materiaisLoginError} />}
 
               {activeTab === "movimentacao" && canAccessMateriais && (
                 <div style={{ display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 20 }}>
                   <Panel
                     title="Registrar entrada ou saída"
-                    right={
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <div
-                          style={{
-                            background: "#EEF2F7",
-                            borderRadius: 10,
-                            padding: "10px 14px",
-                            fontWeight: 700,
-                          }}
-                        >
-                          👤 {authState.materiais?.nome}
-                        </div>
-                        <ActionButton kind="secondary" onClick={() => logoutArea("materiais")}>
-                          Sair
-                        </ActionButton>
-                      </div>
-                    }
+                    right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><div style={{ background: "#EEF2F7", borderRadius: 10, padding: "10px 14px", fontWeight: 700 }}>👤 {authState.materiais?.nome}</div><ActionButton kind="secondary" onClick={() => logoutArea("materiais")}>Sair</ActionButton></div>}
                   >
                     <div style={{ display: "grid", gap: 14 }}>
-                      <Field label="Tipo da movimentação">
-                        <select
-                          value={movementForm.tipo}
-                          onChange={(e) =>
-                            setMovementForm((prev) => ({
-                              ...prev,
-                              tipo: e.target.value,
-                            }))
-                          }
-                          style={{
-                            width: "100%",
-                            minHeight: 46,
-                            borderRadius: 10,
-                            border: "1px solid #d1d5db",
-                            padding: "12px 14px",
-                            fontSize: 16,
-                            outline: "none",
-                            background: "white",
-                          }}
-                        >
-                          <option value="SAÍDA">SAÍDA</option>
-                          <option value="ENTRADA">ENTRADA</option>
-                        </select>
-                      </Field>
-
-                      <Field label="PN">
-                        <TextInput
-                          value={movementForm.pn}
-                          onChange={(e) =>
-                            setMovementForm((prev) => ({
-                              ...prev,
-                              pn: e.target.value,
-                            }))
-                          }
-                          placeholder="Digite o PN"
-                        />
-                      </Field>
-
-                      {matchedMovementMaterial ? (
-                        <div
-                          style={{
-                            border: "1px solid #e5e7eb",
-                            borderRadius: 10,
-                            padding: 14,
-                            background: "#f8fafc",
-                          }}
-                        >
-                          <div style={{ fontWeight: 800 }}>
-                            {matchedMovementMaterial.descricao}
-                          </div>
-                          <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>
-                            PN: {matchedMovementMaterial.pn}
-                          </div>
-                          <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>
-                            Localização: {matchedMovementMaterial.localizacao || "Não informada"}
-                          </div>
-                          <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>
-                            Quantidade atual cadastrada: {matchedMovementMaterial.quantidade ?? 0}
-                          </div>
-                        </div>
-                      ) : null}
-
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: 12,
-                        }}
-                      >
-                        <Field label="Quantidade">
-                          <TextInput
-                            type="number"
-                            value={movementForm.quantidade}
-                            onChange={(e) =>
-                              setMovementForm((prev) => ({
-                                ...prev,
-                                quantidade: e.target.value,
-                              }))
-                            }
-                            placeholder="0"
-                          />
-                        </Field>
-
-                        <Field label="Data e hora">
-                          <TextInput
-                            type="datetime-local"
-                            value={movementForm.data}
-                            onChange={(e) =>
-                              setMovementForm((prev) => ({
-                                ...prev,
-                                data: e.target.value,
-                              }))
-                            }
-                          />
-                        </Field>
+                      <Field label="Tipo da movimentação"><select value={movementForm.tipo} onChange={(e) => setMovementForm((prev) => ({ ...prev, tipo: e.target.value }))} style={{ width: "100%", minHeight: 46, borderRadius: 10, border: "1px solid #d1d5db", padding: "12px 14px", fontSize: 16, outline: "none", background: "white" }}><option value="SAÍDA">SAÍDA</option><option value="ENTRADA">ENTRADA</option></select></Field>
+                      <Field label="PN"><TextInput value={movementForm.pn} onChange={(e) => setMovementForm((prev) => ({ ...prev, pn: e.target.value }))} placeholder="Digite o PN" /></Field>
+                      {matchedMovementMaterial ? <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, background: "#f8fafc" }}><div style={{ fontWeight: 800 }}>{matchedMovementMaterial.descricao}</div><div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>PN: {matchedMovementMaterial.pn}</div><div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>Localização: {matchedMovementMaterial.localizacao || "Não informada"}</div><div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>Quantidade atual cadastrada: {matchedMovementMaterial.quantidade ?? 0}</div></div> : null}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        <Field label="Quantidade"><TextInput type="number" value={movementForm.quantidade} onChange={(e) => setMovementForm((prev) => ({ ...prev, quantidade: e.target.value }))} placeholder="0" /></Field>
+                        <Field label="Data e hora"><TextInput type="datetime-local" value={movementForm.data} onChange={(e) => setMovementForm((prev) => ({ ...prev, data: e.target.value }))} /></Field>
                       </div>
-
-                      <Field label="Observação">
-                        <TextArea
-                          rows={3}
-                          value={movementForm.observacao}
-                          onChange={(e) =>
-                            setMovementForm((prev) => ({
-                              ...prev,
-                              observacao: e.target.value,
-                            }))
-                          }
-                          placeholder="Ex.: faturado, reposição, devolução..."
-                        />
-                      </Field>
-
-                      <InventoryPhotoInput
-                        label="Foto da movimentação"
-                        foto={movementForm.foto}
-                        onChange={(foto) =>
-                          setMovementForm((prev) => ({ ...prev, foto }))
-                        }
-                      />
-
+                      <Field label="Observação"><TextArea rows={3} value={movementForm.observacao} onChange={(e) => setMovementForm((prev) => ({ ...prev, observacao: e.target.value }))} placeholder="Ex.: faturado, reposição, devolução..." /></Field>
+                      <InventoryPhotoInput label="Foto da movimentação" foto={movementForm.foto} onChange={(foto) => setMovementForm((prev) => ({ ...prev, foto }))} />
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <ActionButton onClick={registerMovement}>
-                          Salvar movimentação
-                        </ActionButton>
-
-                        <ActionButton
-                          kind="secondary"
-                          onClick={() =>
-                            setMovementForm({
-                              tipo: "SAÍDA",
-                              pn: "",
-                              quantidade: "",
-                              observacao: "",
-                              foto: "",
-                              data: new Date().toISOString().slice(0, 16),
-                            })
-                          }
-                        >
-                          Limpar
-                        </ActionButton>
+                        <ActionButton onClick={registerMovement}>Salvar movimentação</ActionButton>
+                        <ActionButton kind="secondary" onClick={() => setMovementForm({ tipo: "SAÍDA", pn: "", quantidade: "", observacao: "", foto: "", data: new Date().toISOString().slice(0, 16) })}>Limpar</ActionButton>
                       </div>
                     </div>
                   </Panel>
 
                   <Panel
                     title="Movimentações do mês"
-                    right={
-                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <select
-                          value={movementMonthFilter}
-                          onChange={(e) => setMovementMonthFilter(e.target.value)}
-                          style={{
-                            minHeight: 44,
-                            borderRadius: 14,
-                            border: "1px solid #d1d5db",
-                            padding: "10px 12px",
-                            background: "white",
-                          }}
-                        >
-                          {movementMonths.map((key) => (
-                            <option key={key} value={key}>
-                              {formatMonthLabel(key)}
-                            </option>
-                          ))}
-                        </select>
-
-                        <ActionButton kind="secondary" onClick={exportMovementsCsv}>
-                          Exportar CSV
-                        </ActionButton>
-                      </div>
-                    }
+                    right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><select value={movementMonthFilter} onChange={(e) => setMovementMonthFilter(e.target.value)} style={{ minHeight: 44, borderRadius: 14, border: "1px solid #d1d5db", padding: "10px 12px", background: "white" }}>{movementMonths.map((key) => <option key={key} value={key}>{formatMonthLabel(key)}</option>)}</select><ActionButton kind="secondary" onClick={exportMovementsCsv}>Exportar CSV</ActionButton></div>}
                   >
                     {filteredMovements.length ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                        {filteredMovements
-                          .sort((a, b) => new Date(b.data) - new Date(a.data))
-                          .map((item) => (
-                            <div
-                              key={item.id}
-                              style={{
-                                border: "1px solid #e5e7eb",
-                                borderRadius: 12,
-                                padding: 16,
-                                background: "white",
-                              }}
-                            >
-                              <div
-                                style={{
-                                  display: "flex",
-                                  justifyContent: "space-between",
-                                  gap: 12,
-                                  flexWrap: "wrap",
-                                  alignItems: "center",
-                                }}
-                              >
-                                <div>
-                                  <div style={{ fontWeight: 800, fontSize: 18 }}>
-                                    {item.descricao}
-                                  </div>
-                                  <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>
-                                    PN: {item.pn}
-                                  </div>
-                                </div>
-
-                                <span
-                                  style={{
-                                    ...movementTypeStyle(item.tipo),
-                                    padding: "6px 12px",
-                                    borderRadius: 999,
-                                    fontWeight: 800,
-                                    fontSize: 12,
-                                  }}
-                                >
-                                  {item.tipo}
-                                </span>
+                        {filteredMovements.sort((a, b) => new Date(b.data) - new Date(a.data)).map((item) => (
+                          <div key={item.id} style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 16, background: "white" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                              <div>
+                                <div style={{ fontWeight: 800, fontSize: 18 }}>{item.descricao}</div>
+                                <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>PN: {item.pn}</div>
                               </div>
-
-                              <div
-                                style={{
-                                  display: "grid",
-                                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                                  gap: 12,
-                                  marginTop: 12,
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    border: "1px solid #e5e7eb",
-                                    borderRadius: 14,
-                                    padding: 12,
-                                  }}
-                                >
-                                  <div style={{ fontSize: 12, color: "#6b7280" }}>
-                                    Quantidade
-                                  </div>
-                                  <div style={{ fontWeight: 700, marginTop: 6 }}>
-                                    {item.quantidade}
-                                  </div>
-                                </div>
-
-                                <div
-                                  style={{
-                                    border: "1px solid #e5e7eb",
-                                    borderRadius: 14,
-                                    padding: 12,
-                                  }}
-                                >
-                                  <div style={{ fontSize: 12, color: "#6b7280" }}>
-                                    Usuário
-                                  </div>
-                                  <div style={{ fontWeight: 700, marginTop: 6 }}>
-                                    {item.usuarioNome}
-                                  </div>
-                                </div>
-
-                                <div
-                                  style={{
-                                    border: "1px solid #e5e7eb",
-                                    borderRadius: 14,
-                                    padding: 12,
-                                  }}
-                                >
-                                  <div style={{ fontSize: 12, color: "#6b7280" }}>
-                                    Antes
-                                  </div>
-                                  <div style={{ fontWeight: 700, marginTop: 6 }}>
-                                    {item.quantidadeAntes}
-                                  </div>
-                                </div>
-
-                                <div
-                                  style={{
-                                    border: "1px solid #e5e7eb",
-                                    borderRadius: 14,
-                                    padding: 12,
-                                  }}
-                                >
-                                  <div style={{ fontSize: 12, color: "#6b7280" }}>
-                                    Depois
-                                  </div>
-                                  <div style={{ fontWeight: 700, marginTop: 6 }}>
-                                    {item.quantidadeDepois}
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div
-                                style={{
-                                  fontSize: 14,
-                                  color: "#6b7280",
-                                  marginTop: 12,
-                                }}
-                              >
-                                {formatDateTime(item.data)}
-                              </div>
-
-                              <div
-                                style={{
-                                  fontSize: 14,
-                                  color: "#6b7280",
-                                  marginTop: 6,
-                                }}
-                              >
-                                {item.observacao || "Sem observações"}
-                              </div>
-
-                              {item.foto ? (
-                                <div
-                                  style={{
-                                    marginTop: 12,
-                                    borderRadius: 10,
-                                    overflow: "hidden",
-                                    border: "1px solid #e5e7eb",
-                                  }}
-                                >
-                                  <img
-                                    src={item.foto}
-                                    alt="Movimentação"
-                                    style={{
-                                      width: "100%",
-                                      maxHeight: 240,
-                                      objectFit: "cover",
-                                    }}
-                                  />
-                                </div>
-                              ) : null}
+                              <span style={{ ...movementTypeStyle(item.tipo), padding: "6px 12px", borderRadius: 999, fontWeight: 800, fontSize: 12 }}>{item.tipo}</span>
                             </div>
-                          ))}
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12, marginTop: 12 }}>
+                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: 12 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Quantidade</div><div style={{ fontWeight: 700, marginTop: 6 }}>{item.quantidade}</div></div>
+                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: 12 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Usuário</div><div style={{ fontWeight: 700, marginTop: 6 }}>{item.usuarioNome}</div></div>
+                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: 12 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Antes</div><div style={{ fontWeight: 700, marginTop: 6 }}>{item.quantidadeAntes}</div></div>
+                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: 12 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Depois</div><div style={{ fontWeight: 700, marginTop: 6 }}>{item.quantidadeDepois}</div></div>
+                            </div>
+                            <div style={{ fontSize: 14, color: "#6b7280", marginTop: 12 }}>{formatDateTime(item.data)}</div>
+                            <div style={{ fontSize: 14, color: "#6b7280", marginTop: 6 }}>{item.observacao || "Sem observações"}</div>
+                            {item.foto ? <div style={{ marginTop: 12, borderRadius: 10, overflow: "hidden", border: "1px solid #e5e7eb" }}><img src={item.foto} alt="Movimentação" style={{ width: "100%", maxHeight: 240, objectFit: "cover" }} /></div> : null}
+                          </div>
+                        ))}
                       </div>
-                    ) : (
-                      <div
-                        style={{
-                          border: "1px dashed #cbd5e1",
-                          borderRadius: 24,
-                          background: "#f8fafc",
-                          padding: 40,
-                          textAlign: "center",
-                          color: "#64748b",
-                        }}
-                      >
-                        Nenhuma movimentação registrada nesse mês.
-                      </div>
-                    )}
+                    ) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 24, background: "#f8fafc", padding: 40, textAlign: "center", color: "#64748b" }}>Nenhuma movimentação registrada nesse mês.</div>}
                   </Panel>
                 </div>
               )}
