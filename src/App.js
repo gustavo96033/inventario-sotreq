@@ -2563,3 +2563,4 @@ function WelcomeScreen({ onEnter }) {
     </div>
   );
 }
+export default function App() {
