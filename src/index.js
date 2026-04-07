@@ -1,3 +1,4 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
