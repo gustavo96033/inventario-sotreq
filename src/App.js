@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 const STORAGE_KEYS = {
-  materials: "inventario_materials_v9",
-  inventories: "inventario_inventories_v9",
-  currentInventory: "inventario_current_v9",
-  auth: "inventario_auth_v9",
-  movements: "inventario_movements_v9",
+  materials: "orbisys_materials_v1",
+  inventories: "orbisys_inventories_v1",
+  currentInventory: "orbisys_current_v1",
+  auth: "orbisys_auth_v1",
+  movements: "orbisys_movements_v1",
 };
 
-const CAT_YELLOW = "#f2c200";
-const CAT_BLACK = "#111111";
+const CAT_YELLOW = "#2F6FED";
+const CAT_BLACK = "#0F172A";
 
 const CSV_HEADERS_EXAMPLE =
   "PN;DESCRIÇÃO;LOCALIZAÇÃO;FOTO;OBSERVAÇÃO;STATUS;QUANTIDADE";
@@ -281,7 +281,7 @@ function ActionButton({
       style={{
         ...baseButtonStyle(kind),
         width: fullWidth ? "100%" : "auto",
-        borderRadius: 16,
+        borderRadius: 10,
         padding: "12px 16px",
         fontWeight: 700,
         display: "inline-flex",
@@ -302,9 +302,9 @@ function Panel({ title, children, right }) {
     <div
       style={{
         background: "white",
-        borderRadius: 24,
+        borderRadius: 14,
         padding: 20,
-        boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+        boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
         border: "1px solid #e5e7eb",
       }}
     >
@@ -344,7 +344,7 @@ function TextInput(props) {
       style={{
         width: "100%",
         minHeight: 46,
-        borderRadius: 16,
+        borderRadius: 10,
         border: "1px solid #d1d5db",
         padding: "12px 14px",
         fontSize: 16,
@@ -361,7 +361,7 @@ function TextArea(props) {
       {...props}
       style={{
         width: "100%",
-        borderRadius: 16,
+        borderRadius: 10,
         border: "1px solid #d1d5db",
         padding: "12px 14px",
         fontSize: 15,
@@ -403,7 +403,7 @@ function InventoryPhotoInput({ label, foto, onChange }) {
       <div
         style={{
           border: "1px dashed #9ca3af",
-          borderRadius: 18,
+          borderRadius: 10,
           background: "#f9fafb",
           minHeight: 180,
           display: "flex",
@@ -448,7 +448,7 @@ function MaterialListItem({ item, onEdit, onDelete }) {
         gridTemplateColumns: "72px 1fr auto",
         gap: 12,
         border: "1px solid #e5e7eb",
-        borderRadius: 20,
+        borderRadius: 12,
         padding: 12,
         alignItems: "center",
         background: "white",
@@ -458,9 +458,9 @@ function MaterialListItem({ item, onEdit, onDelete }) {
         style={{
           width: 72,
           height: 72,
-          borderRadius: 16,
+          borderRadius: 10,
           overflow: "hidden",
-          background: "#f3f4f6",
+          background: "#EEF2F7",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -523,7 +523,7 @@ function InventoryItemRow({ item, onChange, onRemove }) {
         gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
         gap: 12,
         border: "1px solid #e5e7eb",
-        borderRadius: 20,
+        borderRadius: 12,
         padding: 14,
         background: "#fff",
       }}
@@ -621,7 +621,7 @@ function LoginGate({
         <div
           style={{
             border: "1px solid #e5e7eb",
-            borderRadius: 24,
+            borderRadius: 14,
             padding: 20,
             background: "#f8fafc",
           }}
@@ -659,7 +659,7 @@ function LoginGate({
               background: "#fee2e2",
               color: "#991b1b",
               border: "1px solid #fecaca",
-              borderRadius: 16,
+              borderRadius: 10,
               padding: 12,
               fontWeight: 600,
             }}
@@ -680,9 +680,9 @@ function StatCard({ title, value, subtitle, icon }) {
   return (
     <div
       style={{
-        background: "linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%)",
+        background: "linear-gradient(180deg, #0F172A 0%, #1E293B 100%)",
         color: "white",
-        borderRadius: 22,
+        borderRadius: 12,
         padding: 18,
         border: "1px solid rgba(255,255,255,0.08)",
         boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
@@ -705,10 +705,10 @@ function QuickAction({ title, text, buttonText, onClick }) {
     <div
       style={{
         background: "white",
-        borderRadius: 24,
+        borderRadius: 14,
         padding: 20,
         border: "1px solid #e5e7eb",
-        boxShadow: "0 8px 30px rgba(0,0,0,0.08)",
+        boxShadow: "0 8px 24px rgba(15,23,42,0.08)",
       }}
     >
       <div style={{ fontSize: 20, fontWeight: 800 }}>{title}</div>
@@ -725,13 +725,13 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
     <div
       style={{
         background:
-          "linear-gradient(135deg, #111111 0%, #1f2937 45%, #111111 100%)",
-        borderRadius: 28,
+          "linear-gradient(135deg, #0F172A 0%, #1D4ED8 38%, #0F172A 100%)",
+        borderRadius: 16,
         padding: 26,
         color: "white",
         position: "relative",
         overflow: "hidden",
-        boxShadow: "0 16px 40px rgba(0,0,0,0.20)",
+        boxShadow: "0 16px 40px rgba(15,23,42,0.18)",
       }}
     >
       <div
@@ -774,7 +774,7 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
             letterSpacing: 0.3,
           }}
         >
-          SOTREQ CAT • CONTROLE INTERNO
+          ORBISYS • OPERATION SUITE
         </div>
 
         <div
@@ -788,7 +788,7 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
         >
           <div>
             <h1 style={{ margin: 0, fontSize: 34, lineHeight: 1.1 }}>
-              Sistema de Controle de Materiais
+              Plataforma Corporativa de Materiais
             </h1>
             <div
               style={{
@@ -799,8 +799,8 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
                 lineHeight: 1.6,
               }}
             >
-              Cadastro de materiais, inventário, histórico por usuário e controle
-              mensal de entrada e saída com foto, quantidade e rastreabilidade.
+              Gestão centralizada de cadastro, inventário, rastreabilidade por usuário
+              e movimentações operacionais com histórico fotográfico e controle quantitativo.
             </div>
 
             <div
@@ -815,7 +815,7 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
                 style={{
                   background: "rgba(255,255,255,0.08)",
                   border: "1px solid rgba(255,255,255,0.10)",
-                  borderRadius: 16,
+                  borderRadius: 10,
                   padding: "10px 14px",
                   fontWeight: 700,
                 }}
@@ -827,7 +827,7 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
                 style={{
                   background: "rgba(255,255,255,0.08)",
                   border: "1px solid rgba(255,255,255,0.10)",
-                  borderRadius: 16,
+                  borderRadius: 10,
                   padding: "10px 14px",
                   fontWeight: 700,
                 }}
@@ -839,7 +839,7 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
                 style={{
                   background: "rgba(255,255,255,0.08)",
                   border: "1px solid rgba(255,255,255,0.10)",
-                  borderRadius: 16,
+                  borderRadius: 10,
                   padding: "10px 14px",
                   fontWeight: 700,
                 }}
@@ -852,9 +852,9 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
           <div
             style={{
               minHeight: 240,
-              borderRadius: 24,
+              borderRadius: 14,
               background:
-                "linear-gradient(180deg, rgba(242,194,0,0.14) 0%, rgba(255,255,255,0.02) 100%)",
+                "linear-gradient(180deg, rgba(47,111,237,0.18) 0%, rgba(255,255,255,0.02) 100%)",
               border: "1px solid rgba(255,255,255,0.10)",
               padding: 20,
               display: "flex",
@@ -870,39 +870,39 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
               <div
                 style={{
                   background: "rgba(255,255,255,0.05)",
-                  borderRadius: 16,
+                  borderRadius: 10,
                   padding: 14,
                 }}
               >
                 <div style={{ color: "#9ca3af", fontSize: 12 }}>Foco atual</div>
                 <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
-                  Entradas e saídas mensais
+                  Movimentações operacionais
                 </div>
               </div>
 
               <div
                 style={{
                   background: "rgba(255,255,255,0.05)",
-                  borderRadius: 16,
+                  borderRadius: 10,
                   padding: 14,
                 }}
               >
                 <div style={{ color: "#9ca3af", fontSize: 12 }}>Controle</div>
                 <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
-                  Rastreio por usuário + foto
+                  Auditoria por usuário e evidência
                 </div>
               </div>
 
               <div
                 style={{
                   background: "rgba(255,255,255,0.05)",
-                  borderRadius: 16,
+                  borderRadius: 10,
                   padding: 14,
                 }}
               >
                 <div style={{ color: "#9ca3af", fontSize: 12 }}>Sistema</div>
                 <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
-                  Gestão inteligente de estoque
+                  Governança de materiais
                 </div>
               </div>
             </div>
@@ -919,7 +919,7 @@ function WelcomeScreen({ onEnter }) {
       style={{
         minHeight: "100vh",
         background:
-          "linear-gradient(135deg, #111111 0%, #1f2937 50%, #111111 100%)",
+          "linear-gradient(135deg, #0F172A 0%, #1E293B 48%, #334155 100%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -934,7 +934,7 @@ function WelcomeScreen({ onEnter }) {
           maxWidth: 1100,
           background: "rgba(255,255,255,0.04)",
           border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: 32,
+          borderRadius: 16,
           overflow: "hidden",
           boxShadow: "0 25px 60px rgba(0,0,0,0.35)",
         }}
@@ -954,7 +954,7 @@ function WelcomeScreen({ onEnter }) {
               flexDirection: "column",
               justifyContent: "space-between",
               background:
-                "linear-gradient(160deg, rgba(242,194,0,0.10) 0%, rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.00) 100%)",
+                "linear-gradient(160deg, rgba(47,111,237,0.18) 0%, rgba(255,255,255,0.02) 45%, rgba(0,0,0,0.00) 100%)",
             }}
           >
             <div>
@@ -971,7 +971,7 @@ function WelcomeScreen({ onEnter }) {
                   fontSize: 14,
                 }}
               >
-                SOTREQ CAT
+                ORBISYS
               </div>
 
               <h1
@@ -981,7 +981,7 @@ function WelcomeScreen({ onEnter }) {
                   lineHeight: 1.05,
                 }}
               >
-                Controle inteligente
+                Gestão operacional
                 <br />
                 de materiais
               </h1>
@@ -994,8 +994,8 @@ function WelcomeScreen({ onEnter }) {
                   maxWidth: 620,
                 }}
               >
-                Sistema para cadastro, pesquisa, inventário, histórico de ações e
-                movimentação mensal de entrada e saída com identificação por usuário.
+                Suite operacional para cadastro, consulta, inventário, auditoria de ações e
+                controle de movimentações com identificação por usuário.
               </div>
 
               <div
@@ -1009,32 +1009,32 @@ function WelcomeScreen({ onEnter }) {
                 <div
                   style={{
                     background: "rgba(255,255,255,0.08)",
-                    borderRadius: 16,
+                    borderRadius: 10,
                     padding: "12px 16px",
                     fontWeight: 700,
                   }}
                 >
-                  📦 Cadastro e pesquisa
+                  📦 Cadastro mestre
                 </div>
                 <div
                   style={{
                     background: "rgba(255,255,255,0.08)",
-                    borderRadius: 16,
+                    borderRadius: 10,
                     padding: "12px 16px",
                     fontWeight: 700,
                   }}
                 >
-                  📝 Inventário salvo
+                  📝 Inventário auditável
                 </div>
                 <div
                   style={{
                     background: "rgba(255,255,255,0.08)",
-                    borderRadius: 16,
+                    borderRadius: 10,
                     padding: "12px 16px",
                     fontWeight: 700,
                   }}
                 >
-                  🔁 Entrada e saída
+                  🔁 Movimentações
                 </div>
               </div>
             </div>
@@ -1046,14 +1046,14 @@ function WelcomeScreen({ onEnter }) {
                   background: CAT_YELLOW,
                   color: CAT_BLACK,
                   border: `1px solid ${CAT_YELLOW}`,
-                  borderRadius: 18,
+                  borderRadius: 10,
                   padding: "16px 24px",
                   fontWeight: 900,
                   fontSize: 17,
                   cursor: "pointer",
                 }}
               >
-                Entrar no sistema
+                Acessar plataforma
               </button>
             </div>
           </div>
@@ -1078,9 +1078,9 @@ function WelcomeScreen({ onEnter }) {
             >
               <div
                 style={{
-                  background: "#0f0f0f",
+                  background: "#111827",
                   color: "white",
-                  borderRadius: 24,
+                  borderRadius: 14,
                   padding: 22,
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
@@ -1090,15 +1090,15 @@ function WelcomeScreen({ onEnter }) {
                   Pesquisa de materiais
                 </div>
                 <div style={{ marginTop: 8, color: "#d1d5db" }}>
-                  Busca rápida por PN, descrição, localização e histórico.
+                  Consulta por PN, descrição, endereço logístico e histórico operacional.
                 </div>
               </div>
 
               <div
                 style={{
-                  background: "#0f0f0f",
+                  background: "#111827",
                   color: "white",
-                  borderRadius: 24,
+                  borderRadius: 14,
                   padding: 22,
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
@@ -1108,15 +1108,15 @@ function WelcomeScreen({ onEnter }) {
                   Inventário e histórico
                 </div>
                 <div style={{ marginTop: 8, color: "#d1d5db" }}>
-                  Criação de inventários salvos e rastreio por usuário.
+                  Inventários persistidos com rastreabilidade por operador.
                 </div>
               </div>
 
               <div
                 style={{
-                  background: "#0f0f0f",
+                  background: "#111827",
                   color: "white",
-                  borderRadius: 24,
+                  borderRadius: 14,
                   padding: 22,
                   border: "1px solid rgba(255,255,255,0.08)",
                 }}
@@ -1126,7 +1126,7 @@ function WelcomeScreen({ onEnter }) {
                   Entrada e saída mensal
                 </div>
                 <div style={{ marginTop: 8, color: "#d1d5db" }}>
-                  Controle de quantidade, fotos e movimentações do mês.
+                  Registro mensal de entradas, saídas, quantidades e evidências.
                 </div>
               </div>
             </div>
@@ -1150,6 +1150,7 @@ function exportToCsv(filename, rows) {
   URL.revokeObjectURL(url);
 }
 
+// Orbisys Stage 1 Rebrand - visual corporativo
 export default function App() {
   const [materials, setMaterials] = useState(() =>
     readStorage(STORAGE_KEYS.materials, [])
@@ -1836,7 +1837,7 @@ export default function App() {
       border: isActive ? `1px solid ${CAT_YELLOW}` : "1px solid #d1d5db",
       background: isActive ? CAT_YELLOW : "white",
       color: CAT_BLACK,
-      borderRadius: 18,
+      borderRadius: 10,
       padding: "12px 16px",
       fontWeight: 800,
       cursor: "pointer",
@@ -1851,7 +1852,7 @@ export default function App() {
     <div
       style={{
         minHeight: "100vh",
-        background: "#f3f4f6",
+        background: "#EEF2F7",
         padding: 20,
         fontFamily:
           'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -1861,10 +1862,10 @@ export default function App() {
         <div
           style={{
             background: CAT_BLACK,
-            borderRadius: 28,
+            borderRadius: 16,
             padding: 24,
             color: "white",
-            boxShadow: "0 10px 35px rgba(0,0,0,0.18)",
+            boxShadow: "0 12px 32px rgba(15,23,42,0.18)",
           }}
         >
           <div
@@ -1882,19 +1883,19 @@ export default function App() {
                   background: CAT_YELLOW,
                   color: CAT_BLACK,
                   padding: "10px 14px",
-                  borderRadius: 18,
+                  borderRadius: 10,
                   fontWeight: 800,
                   letterSpacing: 0.3,
                   display: "inline-block",
                 }}
               >
-                SOTREQ CAT
+                ORBISYS
               </div>
               <h1 style={{ margin: "14px 0 6px 0", fontSize: 30 }}>
-                Controle de materiais
+                Gestão de materiais
               </h1>
               <div style={{ color: "#d1d5db" }}>
-                Cadastro, inventário, histórico e movimentação de entrada e saída
+                Cadastro mestre, inventário, auditoria e movimentações operacionais
               </div>
             </div>
 
@@ -1902,7 +1903,7 @@ export default function App() {
               <div
                 style={{
                   background: "rgba(255,255,255,0.1)",
-                  borderRadius: 20,
+                  borderRadius: 12,
                   padding: "12px 16px",
                 }}
               >
@@ -1915,7 +1916,7 @@ export default function App() {
               <div
                 style={{
                   background: "rgba(255,255,255,0.1)",
-                  borderRadius: 20,
+                  borderRadius: 12,
                   padding: "12px 16px",
                 }}
               >
@@ -1928,7 +1929,7 @@ export default function App() {
               <div
                 style={{
                   background: "rgba(255,255,255,0.1)",
-                  borderRadius: 20,
+                  borderRadius: 12,
                   padding: "12px 16px",
                 }}
               >
@@ -1952,7 +1953,7 @@ export default function App() {
             marginBottom: 20,
             background: "white",
             padding: 12,
-            borderRadius: 24,
+            borderRadius: 14,
             border: "1px solid #e5e7eb",
             boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
           }}
@@ -2064,7 +2065,7 @@ export default function App() {
                         key={item.id}
                         style={{
                           border: "1px solid #e5e7eb",
-                          borderRadius: 18,
+                          borderRadius: 10,
                           padding: 14,
                           background: "white",
                           display: "flex",
@@ -2113,7 +2114,7 @@ export default function App() {
                 <div
                   style={{
                     border: "1px dashed #cbd5e1",
-                    borderRadius: 22,
+                    borderRadius: 12,
                     padding: 28,
                     textAlign: "center",
                     color: "#64748b",
@@ -2156,7 +2157,7 @@ export default function App() {
                         gridTemplateColumns: "64px 1fr",
                         gap: 12,
                         alignItems: "center",
-                        borderRadius: 20,
+                        borderRadius: 12,
                         border:
                           selectedMaterialPn === item.pn
                             ? `2px solid ${CAT_YELLOW}`
@@ -2169,9 +2170,9 @@ export default function App() {
                     >
                       <div
                         style={{
-                          borderRadius: 16,
+                          borderRadius: 10,
                           overflow: "hidden",
-                          background: "#f3f4f6",
+                          background: "#EEF2F7",
                           width: 64,
                           height: 64,
                           display: "flex",
@@ -2210,7 +2211,7 @@ export default function App() {
                     <div
                       style={{
                         border: "1px dashed #cbd5e1",
-                        borderRadius: 20,
+                        borderRadius: 12,
                         padding: 30,
                         textAlign: "center",
                         color: "#64748b",
@@ -2258,10 +2259,10 @@ export default function App() {
                   >
                     <div
                       style={{
-                        borderRadius: 22,
+                        borderRadius: 12,
                         overflow: "hidden",
                         border: "1px solid #e5e7eb",
-                        background: "#f3f4f6",
+                        background: "#EEF2F7",
                         minHeight: 260,
                         display: "flex",
                         alignItems: "center",
@@ -2301,7 +2302,7 @@ export default function App() {
                         <div
                           style={{
                             border: "1px solid #e5e7eb",
-                            borderRadius: 16,
+                            borderRadius: 10,
                             padding: 14,
                           }}
                         >
@@ -2314,7 +2315,7 @@ export default function App() {
                         <div
                           style={{
                             border: "1px solid #e5e7eb",
-                            borderRadius: 16,
+                            borderRadius: 10,
                             padding: 14,
                           }}
                         >
@@ -2327,7 +2328,7 @@ export default function App() {
                         <div
                           style={{
                             border: "1px solid #e5e7eb",
-                            borderRadius: 16,
+                            borderRadius: 10,
                             padding: 14,
                           }}
                         >
@@ -2340,7 +2341,7 @@ export default function App() {
                         <div
                           style={{
                             border: "1px solid #e5e7eb",
-                            borderRadius: 16,
+                            borderRadius: 10,
                             padding: 14,
                           }}
                         >
@@ -2364,7 +2365,7 @@ export default function App() {
                       <div
                         style={{
                           border: "1px solid #e5e7eb",
-                          borderRadius: 18,
+                          borderRadius: 10,
                           padding: 14,
                         }}
                       >
@@ -2386,7 +2387,7 @@ export default function App() {
                               key={item.id}
                               style={{
                                 border: "1px solid #e5e7eb",
-                                borderRadius: 18,
+                                borderRadius: 10,
                                 padding: 14,
                                 background: "#fafafa",
                               }}
@@ -2435,7 +2436,7 @@ export default function App() {
                                 <div
                                   style={{
                                     marginTop: 12,
-                                    borderRadius: 16,
+                                    borderRadius: 10,
                                     overflow: "hidden",
                                     border: "1px solid #e5e7eb",
                                   }}
@@ -2457,7 +2458,7 @@ export default function App() {
                         <div
                           style={{
                             border: "1px dashed #cbd5e1",
-                            borderRadius: 20,
+                            borderRadius: 12,
                             padding: 24,
                             textAlign: "center",
                             color: "#64748b",
@@ -2473,7 +2474,7 @@ export default function App() {
                 <div
                   style={{
                     border: "1px dashed #cbd5e1",
-                    borderRadius: 24,
+                    borderRadius: 14,
                     background: "#f8fafc",
                     padding: 40,
                     textAlign: "center",
@@ -2505,8 +2506,8 @@ export default function App() {
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <div
                   style={{
-                    background: "#f3f4f6",
-                    borderRadius: 16,
+                    background: "#EEF2F7",
+                    borderRadius: 10,
                     padding: "10px 14px",
                     fontWeight: 700,
                   }}
@@ -2545,7 +2546,7 @@ export default function App() {
                           key={inv.id}
                           style={{
                             border: "1px solid #e5e7eb",
-                            borderRadius: 18,
+                            borderRadius: 10,
                             padding: 14,
                             display: "flex",
                             justifyContent: "space-between",
@@ -2576,7 +2577,7 @@ export default function App() {
                       <div
                         style={{
                           border: "1px dashed #cbd5e1",
-                          borderRadius: 20,
+                          borderRadius: 12,
                           padding: 24,
                           textAlign: "center",
                           color: "#64748b",
@@ -2593,7 +2594,7 @@ export default function App() {
                 <div
                   style={{
                     border: "1px solid #e5e7eb",
-                    borderRadius: 22,
+                    borderRadius: 12,
                     padding: 18,
                     background: "#f8fafc",
                   }}
@@ -2646,7 +2647,7 @@ export default function App() {
                     <div
                       style={{
                         border: "1px dashed #cbd5e1",
-                        borderRadius: 20,
+                        borderRadius: 12,
                         padding: 30,
                         textAlign: "center",
                         color: "#64748b",
@@ -2679,7 +2680,7 @@ export default function App() {
                       key={item.id}
                       style={{
                         border: "1px solid #e5e7eb",
-                        borderRadius: 18,
+                        borderRadius: 10,
                         padding: 14,
                         background: "white",
                       }}
@@ -2730,7 +2731,7 @@ export default function App() {
                 <div
                   style={{
                     border: "1px dashed #cbd5e1",
-                    borderRadius: 24,
+                    borderRadius: 14,
                     background: "#f8fafc",
                     padding: 40,
                     textAlign: "center",
@@ -2763,8 +2764,8 @@ export default function App() {
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <div
                     style={{
-                      background: "#f3f4f6",
-                      borderRadius: 16,
+                      background: "#EEF2F7",
+                      borderRadius: 10,
                       padding: "10px 14px",
                       fontWeight: 700,
                     }}
@@ -2782,7 +2783,7 @@ export default function App() {
                   style={{
                     background: "#fff7cc",
                     border: "1px solid #fde68a",
-                    borderRadius: 18,
+                    borderRadius: 10,
                     padding: 14,
                   }}
                 >
@@ -2880,7 +2881,7 @@ export default function App() {
                     style={{
                       width: "100%",
                       minHeight: 46,
-                      borderRadius: 16,
+                      borderRadius: 10,
                       border: "1px solid #d1d5db",
                       padding: "12px 14px",
                       fontSize: 16,
@@ -2944,7 +2945,7 @@ export default function App() {
                   <div
                     style={{
                       border: "1px dashed #cbd5e1",
-                      borderRadius: 24,
+                      borderRadius: 14,
                       background: "#f8fafc",
                       padding: 40,
                       textAlign: "center",
@@ -2978,8 +2979,8 @@ export default function App() {
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <div
                     style={{
-                      background: "#f3f4f6",
-                      borderRadius: 16,
+                      background: "#EEF2F7",
+                      borderRadius: 10,
                       padding: "10px 14px",
                       fontWeight: 700,
                     }}
@@ -3005,7 +3006,7 @@ export default function App() {
                     style={{
                       width: "100%",
                       minHeight: 46,
-                      borderRadius: 16,
+                      borderRadius: 10,
                       border: "1px solid #d1d5db",
                       padding: "12px 14px",
                       fontSize: 16,
@@ -3035,7 +3036,7 @@ export default function App() {
                   <div
                     style={{
                       border: "1px solid #e5e7eb",
-                      borderRadius: 18,
+                      borderRadius: 10,
                       padding: 14,
                       background: "#f8fafc",
                     }}
@@ -3173,7 +3174,7 @@ export default function App() {
                         key={item.id}
                         style={{
                           border: "1px solid #e5e7eb",
-                          borderRadius: 22,
+                          borderRadius: 12,
                           padding: 16,
                           background: "white",
                         }}
@@ -3302,7 +3303,7 @@ export default function App() {
                           <div
                             style={{
                               marginTop: 12,
-                              borderRadius: 18,
+                              borderRadius: 10,
                               overflow: "hidden",
                               border: "1px solid #e5e7eb",
                             }}
@@ -3325,7 +3326,7 @@ export default function App() {
                 <div
                   style={{
                     border: "1px dashed #cbd5e1",
-                    borderRadius: 24,
+                    borderRadius: 14,
                     background: "#f8fafc",
                     padding: 40,
                     textAlign: "center",
