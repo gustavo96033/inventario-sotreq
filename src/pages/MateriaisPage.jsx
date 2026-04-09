@@ -1,3 +1,7 @@
 export default function MateriaisPage() {
-  return <div>Materiais funcionando</div>;
+  return (
+    <div>
+      <h2>Materiais funcionando</h2>
+    </div>
+  );
 }
