@@ -6,11 +6,7 @@ export default function InventarioPage() {
   return (
     <div>
       <h2>Inventário</h2>
-      {user ? (
-        <p>Usuário logado: {user.email}</p>
-      ) : (
-        <p>Faça login</p>
-      )}
+      <p>{user ? user.email : "Faça login"}</p>
     </div>
   );
 }
