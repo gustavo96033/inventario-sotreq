@@ -1,3 +1,7 @@
 export default function InventarioPage() {
-  return <div>Inventário funcionando</div>;
+  return (
+    <div>
+      <h2>Inventário funcionando</h2>
+    </div>
+  );
 }
