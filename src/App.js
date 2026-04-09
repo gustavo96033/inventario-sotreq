@@ -1358,17 +1358,26 @@ useEffect(() => {
     setAuthLoading(false);
   }
 }
-    );
+   async function handleInventarioLogin() {
+  if (!supabase) return;
 
-    if (!found) {
-      setInventarioLoginError("Matrícula ou senha inválida.");
-      return;
-    }
+  setAuthLoading(true);
+  setInventarioLoginError("");
 
-    setInventarioLoginError("");
-    setAuthState((prev) => ({ ...prev, inventario: found }));
-    setInventarioLoginForm({ matricula: "", senha: "" });
+  try {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: inventarioLoginForm.email,
+      password: inventarioLoginForm.senha,
+    });
+
+    if (error) throw error;
+    setInventarioLoginForm({ email: "", senha: "" });
+  } catch (error) {
+    setInventarioLoginError(error.message || "Erro ao fazer login.");
+  } finally {
+    setAuthLoading(false);
   }
+}
 
   function handleMateriaisLogin() {
     const found = ACCESS_CONFIG.materiais.find(
