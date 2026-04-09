@@ -1,21 +1,12 @@
-export default function InventarioPage() {
-  return (
-    <div style={{ padding: "20px" }}>
-      <h1>📦 Orbisys - Inventário</h1>
-      <p>Sistema online funcionando</p>
+import { useAuth } from "../hooks/useAuth";
 
-      <div
-        style={{
-          border: "1px solid #ccc",
-          padding: "20px",
-          borderRadius: "8px",
-          marginTop: "20px",
-        }}
-      >
-        <h3>Resumo</h3>
-        <p>Itens cadastrados: 0</p>
-        <p>Último inventário: hoje</p>
-      </div>
+export default function InventarioPage() {
+  const user = useAuth();
+
+  return (
+    <div>
+      <h2>Inventário</h2>
+      {user ? <p>Usuário logado: {user.email}</p> : <p>Faça login</p>}
     </div>
   );
 }
