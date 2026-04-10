@@ -978,6 +978,11 @@ function buildMaterialsWithHistory(materialRows, historyRows) {
 }
 
 export default function App() {
+ const [user, setUser] = useState(null);
+const [loadingAuth, setLoadingAuth] = useState(true);
+const [loginEmail, setLoginEmail] = useState("");
+const [loginPassword, setLoginPassword] = useState("");
+const [loginError, setLoginError] = useState("");
   const [materials, setMaterials] = useState([]);
   const [movements, setMovements] = useState([]);
   const [inventories, setInventories] = useState([]);
