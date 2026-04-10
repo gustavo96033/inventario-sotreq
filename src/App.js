@@ -694,12 +694,21 @@ function StatCard({ title, value, subtitle, icon }) {
       }}
     >
       <div style={{ fontSize: 28 }}>{icon}</div>
-      <div style={{ marginTop: 10, fontSize: 13, color: "#d1d5db", fontWeight: 700 }}>
+      <div
+        style={{
+          marginTop: 10,
+          fontSize: 13,
+          color: "#d1d5db",
+          fontWeight: 700,
+        }}
+      >
         {title}
       </div>
       <div style={{ marginTop: 6, fontSize: 28, fontWeight: 900 }}>{value}</div>
       {subtitle ? (
-        <div style={{ marginTop: 6, fontSize: 13, color: "#9ca3af" }}>{subtitle}</div>
+        <div style={{ marginTop: 6, fontSize: 13, color: "#9ca3af" }}>
+          {subtitle}
+        </div>
       ) : null}
     </div>
   );
@@ -717,7 +726,9 @@ function QuickAction({ title, text, buttonText, onClick }) {
       }}
     >
       <div style={{ fontSize: 20, fontWeight: 800 }}>{title}</div>
-      <div style={{ marginTop: 8, color: "#6b7280", lineHeight: 1.5 }}>{text}</div>
+      <div style={{ marginTop: 8, color: "#6b7280", lineHeight: 1.5 }}>
+        {text}
+      </div>
       <div style={{ marginTop: 16 }}>
         <ActionButton onClick={onClick}>{buttonText}</ActionButton>
       </div>
@@ -725,7 +736,12 @@ function QuickAction({ title, text, buttonText, onClick }) {
   );
 }
 
-function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLabel }) {
+function MiningHero({
+  materialsCount,
+  inventoriesCount,
+  movementsCount,
+  monthLabel,
+}) {
   return (
     <div
       style={{
@@ -804,8 +820,9 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
                 lineHeight: 1.6,
               }}
             >
-              Gestão centralizada de cadastro, inventário, rastreabilidade por usuário
-              e movimentações operacionais com histórico fotográfico e controle quantitativo.
+              Gestão centralizada de cadastro, inventário, rastreabilidade por
+              usuário e movimentações operacionais com histórico fotográfico e
+              controle quantitativo.
             </div>
 
             <div
@@ -879,7 +896,9 @@ function MiningHero({ materialsCount, inventoriesCount, movementsCount, monthLab
                   padding: 14,
                 }}
               >
-                <div style={{ color: "#9ca3af", fontSize: 12 }}>Foco atual</div>
+                <div style={{ color: "#9ca3af", fontSize: 12 }}>
+                  Foco atual
+                </div>
                 <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
                   Movimentações operacionais
                 </div>
@@ -979,15 +998,16 @@ export default function App() {
   const [editingPn, setEditingPn] = useState("");
 
   const [inventarioLoginForm, setInventarioLoginForm] = useState({
-  matricula: "",
-  senha: "",
-});
-const [materiaisLoginForm, setMateriaisLoginForm] = useState({
-  matricula: "",
-  senha: "",
-});
-const [inventarioLoginError, setInventarioLoginError] = useState("");
-const [materiaisLoginError, setMateriaisLoginError] = useState("");
+    matricula: "",
+    senha: "",
+  });
+  const [materiaisLoginForm, setMateriaisLoginForm] = useState({
+    matricula: "",
+    senha: "",
+  });
+  const [inventarioLoginError, setInventarioLoginError] = useState("");
+  const [materiaisLoginError, setMateriaisLoginError] = useState("");
+
   const [newMaterial, setNewMaterial] = useState({
     pn: "",
     descricao: "",
@@ -1030,11 +1050,26 @@ const [materiaisLoginError, setMateriaisLoginError] = useState("");
         { data: inventoryRows, error: inventoryError },
         { data: inventoryItemRows, error: inventoryItemError },
       ] = await Promise.all([
-        supabase.from("materials").select("*").order("descricao", { ascending: true }),
-        supabase.from("material_history").select("*").order("data", { ascending: false }),
-        supabase.from("movements").select("*").order("data", { ascending: false }),
-        supabase.from("inventories").select("*").order("atualizado_em", { ascending: false }),
-        supabase.from("inventory_items").select("*").order("descricao", { ascending: true }),
+        supabase
+          .from("materials")
+          .select("*")
+          .order("descricao", { ascending: true }),
+        supabase
+          .from("material_history")
+          .select("*")
+          .order("data", { ascending: false }),
+        supabase
+          .from("movements")
+          .select("*")
+          .order("data", { ascending: false }),
+        supabase
+          .from("inventories")
+          .select("*")
+          .order("atualizado_em", { ascending: false }),
+        supabase
+          .from("inventory_items")
+          .select("*")
+          .order("descricao", { ascending: true }),
       ]);
 
       if (materialError) throw materialError;
@@ -1044,6 +1079,7 @@ const [materiaisLoginError, setMateriaisLoginError] = useState("");
       if (inventoryItemError) throw inventoryItemError;
 
       setMaterials(buildMaterialsWithHistory(materialRows || [], historyRows || []));
+
       setMovements(
         (movementRows || []).map((item) => ({
           id: item.id,
@@ -1060,6 +1096,7 @@ const [materiaisLoginError, setMateriaisLoginError] = useState("");
           usuarioMatricula: item.usuario_matricula || "-",
         }))
       );
+
       setInventories(
         (inventoryRows || []).map((inv) => ({
           id: inv.id,
@@ -1121,8 +1158,9 @@ const [materiaisLoginError, setMateriaisLoginError] = useState("");
 
   const matchedMovementMaterial = useMemo(
     () =>
-      materials.find((item) => normalizeText(item.pn) === normalizeText(movementForm.pn)) ||
-      null,
+      materials.find(
+        (item) => normalizeText(item.pn) === normalizeText(movementForm.pn)
+      ) || null,
     [materials, movementForm.pn]
   );
 
@@ -1168,7 +1206,8 @@ const [materiaisLoginError, setMateriaisLoginError] = useState("");
       return;
     }
 
-    const actor = authState.materiais || authState.inventario || { nome: "Sistema", matricula: "-" };
+    const actor =
+      authState.materiais || authState.inventario || { nome: "Sistema", matricula: "-" };
     const normalizedPn = newMaterial.pn.trim();
     const quantityValue = Number(newMaterial.quantidade || 0);
 
@@ -1185,7 +1224,10 @@ const [materiaisLoginError, setMateriaisLoginError] = useState("");
 
     try {
       if (editingPn) {
-        const { error } = await supabase.from("materials").update(payload).eq("pn", editingPn);
+        const { error } = await supabase
+          .from("materials")
+          .update(payload)
+          .eq("pn", editingPn);
         if (error) throw error;
 
         const { error: historyError } = await supabase.from("material_history").insert({
@@ -1244,63 +1286,7 @@ const [materiaisLoginError, setMateriaisLoginError] = useState("");
   }
 
   async function deleteMaterial(pn) {
-  if (!supabase) return;
-
-  const confirmed = window.confirm(`Deseja excluir o material ${pn}?`);
-  if (!confirmed) return;
-
-  try {
-    const { error: historyError } = await supabase
-      .from("material_history")
-      .delete()
-      .eq("material_pn", pn);
-    if (historyError) throw historyError;
-
-    const { error } = await supabase.from("materials").delete().eq("pn", pn);
-    if (error) throw error;
-
-    if (selectedMaterialPn === pn) setSelectedMaterialPn("");
-    if (editingPn === pn) resetMaterialForm();
-    await loadCloudData();
-  } catch (error) {
-    console.error(error);
-    window.alert(error.message || "Erro ao excluir material.");
-  }
-}
-
-function handleInventarioLogin() {
-  const found = ACCESS_CONFIG.inventario.find(
-    (item) =>
-      item.matricula === inventarioLoginForm.matricula &&
-      item.senha === inventarioLoginForm.senha
-  );
-
-  if (!found) {
-    setInventarioLoginError("Matrícula ou senha inválida.");
-    return;
-  }
-
-  setInventarioLoginError("");
-  setAuthState((prev) => ({ ...prev, inventario: found }));
-  setInventarioLoginForm({ matricula: "", senha: "" });
-}
-
-function handleMateriaisLogin() {
-  const found = ACCESS_CONFIG.materiais.find(
-    (item) =>
-      item.matricula === materiaisLoginForm.matricula &&
-      item.senha === materiaisLoginForm.senha
-  );
-
-  if (!found) {
-    setMateriaisLoginError("Matrícula ou senha inválida.");
-    return;
-  }
-
-  setMateriaisLoginError("");
-  setAuthState((prev) => ({ ...prev, materiais: found }));
-  setMateriaisLoginForm({ matricula: "", senha: "" });
-}
+    if (!supabase) return;
 
     const confirmed = window.confirm(`Deseja excluir o material ${pn}?`);
     if (!confirmed) return;
@@ -1323,6 +1309,18 @@ function handleMateriaisLogin() {
       window.alert(error.message || "Erro ao excluir material.");
     }
   }
+
+  function handleInventarioLogin() {
+    const found = ACCESS_CONFIG.inventario.find(
+      (item) =>
+        item.matricula === inventarioLoginForm.matricula &&
+        item.senha === inventarioLoginForm.senha
+    );
+
+    if (!found) {
+      setInventarioLoginError("Matrícula ou senha inválida.");
+      return;
+    }
 
     setInventarioLoginError("");
     setAuthState((prev) => ({ ...prev, inventario: found }));
@@ -1378,7 +1376,8 @@ function handleMateriaisLogin() {
     if (!supabase || !currentInventory) return null;
 
     try {
-      const isNew = !currentInventory.id || String(currentInventory.id).startsWith("temp-");
+      const isNew =
+        !currentInventory.id || String(currentInventory.id).startsWith("temp-");
       let inventoryId = currentInventory.id;
 
       if (isNew) {
@@ -1386,7 +1385,8 @@ function handleMateriaisLogin() {
           .from("inventories")
           .insert({
             nome: currentInventory.nome,
-            criado_por: currentInventory.criadoPor || authState.inventario?.nome || "-",
+            criado_por:
+              currentInventory.criadoPor || authState.inventario?.nome || "-",
             criado_em: currentInventory.criadoEm || new Date().toISOString(),
             atualizado_em: new Date().toISOString(),
           })
@@ -1431,7 +1431,8 @@ function handleMateriaisLogin() {
       }
 
       await loadCloudData();
-      const savedInventory = inventories.find((inv) => inv.id === inventoryId) || null;
+      const savedInventory =
+        inventories.find((inv) => inv.id === inventoryId) || null;
       if (savedInventory) setCurrentInventory(savedInventory);
       if (!options.silent) window.alert("Inventário salvo na nuvem com sucesso.");
       return inventoryId;
@@ -1453,6 +1454,7 @@ function handleMateriaisLogin() {
 
   function addManualItemToInventory() {
     if (!currentInventory) return;
+
     const newItem = {
       id: createId(),
       pn: "",
@@ -1474,7 +1476,9 @@ function handleMateriaisLogin() {
     setCurrentInventory((prev) => ({
       ...prev,
       atualizadoEm: new Date().toISOString(),
-      itens: (prev.itens || []).map((item) => (item.id === itemId ? nextItem : item)),
+      itens: (prev.itens || []).map((item) =>
+        item.id === itemId ? nextItem : item
+      ),
     }));
   }
 
@@ -1488,6 +1492,7 @@ function handleMateriaisLogin() {
 
   function addSearchedItemToInventory() {
     if (!currentInventory || !selectedMaterial) return;
+
     const newItem = {
       id: createId(),
       pn: selectedMaterial.pn,
@@ -1503,11 +1508,13 @@ function handleMateriaisLogin() {
       atualizadoEm: new Date().toISOString(),
       itens: [...(prev.itens || []), newItem],
     }));
+
     window.alert("Item adicionado ao inventário atual.");
   }
 
   async function registerMovement() {
     if (!supabase) return;
+
     if (!matchedMovementMaterial) {
       window.alert("PN não encontrado na base de materiais.");
       return;
@@ -1640,6 +1647,7 @@ function handleMateriaisLogin() {
         window.alert(error.message || "Erro ao importar CSV.");
       }
     };
+
     reader.readAsText(file, "utf-8");
   }
 
@@ -1692,7 +1700,11 @@ function handleMateriaisLogin() {
     if (!selectedMaterialPn && filteredMaterials.length) {
       setSelectedMaterialPn(filteredMaterials[0].pn);
     }
-    if (selectedMaterialPn && !filteredMaterials.some((item) => item.pn === selectedMaterialPn)) {
+
+    if (
+      selectedMaterialPn &&
+      !filteredMaterials.some((item) => item.pn === selectedMaterialPn)
+    ) {
       setSelectedMaterialPn(filteredMaterials[0]?.pn || "");
     }
   }, [filteredMaterials, selectedMaterialPn]);
@@ -1706,7 +1718,7 @@ function handleMateriaisLogin() {
           alignItems: "center",
           justifyContent: "center",
           background: "#E8EDF5",
-          fontFamily: 'Inter, sans-serif',
+          fontFamily: "Inter, sans-serif",
         }}
       >
         <div
@@ -1841,7 +1853,9 @@ function handleMateriaisLogin() {
                     cursor: "pointer",
                     textAlign: "left",
                     fontWeight: isActive ? 800 : 700,
-                    boxShadow: isActive ? "0 10px 24px rgba(47,111,237,0.18)" : "none",
+                    boxShadow: isActive
+                      ? "0 10px 24px rgba(47,111,237,0.18)"
+                      : "none",
                   }}
                 >
                   <span
@@ -1852,7 +1866,9 @@ function handleMateriaisLogin() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      background: isActive ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+                      background: isActive
+                        ? "rgba(255,255,255,0.12)"
+                        : "rgba(255,255,255,0.05)",
                       color: isActive ? "#DBEAFE" : "#CBD5E1",
                       fontSize: 14,
                     }}
@@ -1861,7 +1877,13 @@ function handleMateriaisLogin() {
                   </span>
                   <div>
                     <div style={{ fontSize: 14 }}>{label}</div>
-                    <div style={{ fontSize: 11, color: isActive ? "#BFDBFE" : "#94A3B8", marginTop: 3 }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: isActive ? "#BFDBFE" : "#94A3B8",
+                        marginTop: 3,
+                      }}
+                    >
                       {tab === "inicio" && "Visão consolidada"}
                       {tab === "pesquisa" && "Consulta por PN e descrição"}
                       {tab === "inventario" && "Contagem e consolidação"}
@@ -1892,9 +1914,14 @@ function handleMateriaisLogin() {
                 border: "1px solid rgba(255,255,255,0.06)",
               }}
             >
-              <div style={{ color: "#94A3B8", fontSize: 11, letterSpacing: 0.4 }}>MATERIAIS</div>
-              <div style={{ marginTop: 6, fontWeight: 900, fontSize: 24 }}>{materials.length}</div>
+              <div style={{ color: "#94A3B8", fontSize: 11, letterSpacing: 0.4 }}>
+                MATERIAIS
+              </div>
+              <div style={{ marginTop: 6, fontWeight: 900, fontSize: 24 }}>
+                {materials.length}
+              </div>
             </div>
+
             <div
               style={{
                 background: "rgba(255,255,255,0.04)",
@@ -1903,9 +1930,15 @@ function handleMateriaisLogin() {
                 border: "1px solid rgba(255,255,255,0.06)",
               }}
             >
-              <div style={{ color: "#94A3B8", fontSize: 11, letterSpacing: 0.4 }}>MOV. DO MÊS</div>
-              <div style={{ marginTop: 6, fontWeight: 900, fontSize: 24 }}>{currentMonthMovements.length}</div>
-              <div style={{ marginTop: 4, color: "#CBD5E1", fontSize: 12 }}>{currentMonthLabel}</div>
+              <div style={{ color: "#94A3B8", fontSize: 11, letterSpacing: 0.4 }}>
+                MOV. DO MÊS
+              </div>
+              <div style={{ marginTop: 6, fontWeight: 900, fontSize: 24 }}>
+                {currentMonthMovements.length}
+              </div>
+              <div style={{ marginTop: 4, color: "#CBD5E1", fontSize: 12 }}>
+                {currentMonthLabel}
+              </div>
             </div>
           </div>
         </aside>
@@ -1969,11 +2002,25 @@ function handleMateriaisLogin() {
                 >
                   OPERATIONS CONTROL PLATFORM
                 </div>
-                <h1 style={{ margin: "16px 0 8px 0", fontSize: 34, lineHeight: 1.05 }}>
+                <h1
+                  style={{
+                    margin: "16px 0 8px 0",
+                    fontSize: 34,
+                    lineHeight: 1.05,
+                  }}
+                >
                   Gestão operacional com rastreabilidade e controle mestre
                 </h1>
-                <div style={{ color: "#CBD5E1", lineHeight: 1.6, maxWidth: 820 }}>
-                  Plataforma para cadastro mestre de materiais, consulta operacional, inventário físico, auditoria de alterações e movimentações mensais com identificação por usuário.
+                <div
+                  style={{
+                    color: "#CBD5E1",
+                    lineHeight: 1.6,
+                    maxWidth: 820,
+                  }}
+                >
+                  Plataforma para cadastro mestre de materiais, consulta operacional,
+                  inventário físico, auditoria de alterações e movimentações mensais
+                  com identificação por usuário.
                 </div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
                   {[
@@ -2012,9 +2059,22 @@ function handleMateriaisLogin() {
                       padding: 16,
                     }}
                   >
-                    <div style={{ color: "#64748B", fontSize: 12, fontWeight: 700 }}>{title}</div>
-                    <div style={{ marginTop: 8, fontSize: 28, fontWeight: 900, color: "#0F172A" }}>{value}</div>
-                    <div style={{ marginTop: 4, color: "#64748B", fontSize: 13 }}>{subtitle}</div>
+                    <div style={{ color: "#64748B", fontSize: 12, fontWeight: 700 }}>
+                      {title}
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 8,
+                        fontSize: 28,
+                        fontWeight: 900,
+                        color: "#0F172A",
+                      }}
+                    >
+                      {value}
+                    </div>
+                    <div style={{ marginTop: 4, color: "#64748B", fontSize: 13 }}>
+                      {subtitle}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -2037,10 +2097,30 @@ function handleMateriaisLogin() {
                       gap: 18,
                     }}
                   >
-                    <StatCard title="Materiais cadastrados" value={materials.length} subtitle="Base total cadastrada" icon="📦" />
-                    <StatCard title="Inventários salvos" value={inventories.length} subtitle="Histórico de contagens" icon="📝" />
-                    <StatCard title="Entradas no mês" value={currentMonthEntries} subtitle={currentMonthLabel} icon="⬇️" />
-                    <StatCard title="Saídas no mês" value={currentMonthOutputs} subtitle={currentMonthLabel} icon="⬆️" />
+                    <StatCard
+                      title="Materiais cadastrados"
+                      value={materials.length}
+                      subtitle="Base total cadastrada"
+                      icon="📦"
+                    />
+                    <StatCard
+                      title="Inventários salvos"
+                      value={inventories.length}
+                      subtitle="Histórico de contagens"
+                      icon="📝"
+                    />
+                    <StatCard
+                      title="Entradas no mês"
+                      value={currentMonthEntries}
+                      subtitle={currentMonthLabel}
+                      icon="⬇️"
+                    />
+                    <StatCard
+                      title="Saídas no mês"
+                      value={currentMonthOutputs}
+                      subtitle={currentMonthLabel}
+                      icon="⬆️"
+                    />
                   </div>
 
                   <div
@@ -2050,9 +2130,24 @@ function handleMateriaisLogin() {
                       gap: 18,
                     }}
                   >
-                    <QuickAction title="Pesquisar material" text="Encontre rápido por PN, descrição, localização ou observação." buttonText="Abrir pesquisa" onClick={() => setActiveTab("pesquisa")} />
-                    <QuickAction title="Registrar entrada ou saída" text="Lance movimentações do mês com quantidade, foto, data e usuário responsável." buttonText="Abrir movimentação" onClick={() => setActiveTab("movimentacao")} />
-                    <QuickAction title="Criar ou abrir inventário" text="Monte um novo inventário, continue um salvo ou adicione item pesquisado." buttonText="Abrir inventário" onClick={() => setActiveTab("inventario")} />
+                    <QuickAction
+                      title="Pesquisar material"
+                      text="Encontre rápido por PN, descrição, localização ou observação."
+                      buttonText="Abrir pesquisa"
+                      onClick={() => setActiveTab("pesquisa")}
+                    />
+                    <QuickAction
+                      title="Registrar entrada ou saída"
+                      text="Lance movimentações do mês com quantidade, foto, data e usuário responsável."
+                      buttonText="Abrir movimentação"
+                      onClick={() => setActiveTab("movimentacao")}
+                    />
+                    <QuickAction
+                      title="Criar ou abrir inventário"
+                      text="Monte um novo inventário, continue um salvo ou adicione item pesquisado."
+                      buttonText="Abrir inventário"
+                      onClick={() => setActiveTab("inventario")}
+                    />
                   </div>
 
                   <Panel title={`Resumo de movimentações de ${currentMonthLabel}`}>
@@ -2078,21 +2173,51 @@ function handleMateriaisLogin() {
                             >
                               <div>
                                 <div style={{ fontWeight: 800 }}>{item.descricao}</div>
-                                <div style={{ color: "#6b7280", marginTop: 4 }}>PN: {item.pn}</div>
-                                <div style={{ color: "#6b7280", marginTop: 4 }}>Usuário: {item.usuarioNome} • {formatDateTime(item.data)}</div>
+                                <div style={{ color: "#6b7280", marginTop: 4 }}>
+                                  PN: {item.pn}
+                                </div>
+                                <div style={{ color: "#6b7280", marginTop: 4 }}>
+                                  Usuário: {item.usuarioNome} • {formatDateTime(item.data)}
+                                </div>
                               </div>
                               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <span style={{ ...movementTypeStyle(item.tipo), padding: "6px 12px", borderRadius: 999, fontSize: 12, fontWeight: 800 }}>{item.tipo}</span>
-                                <div style={{ fontWeight: 900, fontSize: 20 }}>{item.quantidade}</div>
+                                <span
+                                  style={{
+                                    ...movementTypeStyle(item.tipo),
+                                    padding: "6px 12px",
+                                    borderRadius: 999,
+                                    fontSize: 12,
+                                    fontWeight: 800,
+                                  }}
+                                >
+                                  {item.tipo}
+                                </span>
+                                <div style={{ fontWeight: 900, fontSize: 20 }}>
+                                  {item.quantidade}
+                                </div>
                               </div>
                             </div>
                           ))}
                         <div style={{ marginTop: 6 }}>
-                          <ActionButton kind="secondary" onClick={() => setActiveTab("movimentacao")}>Ver todas as movimentações do mês</ActionButton>
+                          <ActionButton
+                            kind="secondary"
+                            onClick={() => setActiveTab("movimentacao")}
+                          >
+                            Ver todas as movimentações do mês
+                          </ActionButton>
                         </div>
                       </div>
                     ) : (
-                      <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 28, textAlign: "center", color: "#64748b", background: "#f8fafc" }}>
+                      <div
+                        style={{
+                          border: "1px dashed #cbd5e1",
+                          borderRadius: 12,
+                          padding: 28,
+                          textAlign: "center",
+                          color: "#64748b",
+                          background: "#f8fafc",
+                        }}
+                      >
                         Ainda não existem movimentações registradas neste mês.
                       </div>
                     )}
@@ -2104,54 +2229,267 @@ function handleMateriaisLogin() {
                 <div style={{ display: "grid", gridTemplateColumns: "0.9fr 1.1fr", gap: 20 }}>
                   <Panel
                     title="Pesquisar materiais"
-                    right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><ActionButton kind="secondary" onClick={exportMaterialsCsv}>Exportar CSV</ActionButton><ActionButton kind="secondary" onClick={loadCloudData}>Atualizar nuvem</ActionButton></div>}
+                    right={
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <ActionButton kind="secondary" onClick={exportMaterialsCsv}>
+                          Exportar CSV
+                        </ActionButton>
+                        <ActionButton kind="secondary" onClick={loadCloudData}>
+                          Atualizar nuvem
+                        </ActionButton>
+                      </div>
+                    }
                   >
                     <div style={{ display: "grid", gap: 14 }}>
-                      <TextInput value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquise por PN, descrição, localização..." />
+                      <TextInput
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Pesquise por PN, descrição, localização..."
+                      />
                       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                         {filteredMaterials.map((item) => (
                           <button
                             key={item.pn}
                             onClick={() => setSelectedMaterialPn(item.pn)}
-                            style={{ display: "grid", gridTemplateColumns: "64px 1fr", gap: 12, alignItems: "center", borderRadius: 12, border: selectedMaterialPn === item.pn ? `2px solid ${CAT_YELLOW}` : "1px solid #e5e7eb", background: "white", padding: 12, cursor: "pointer", textAlign: "left" }}
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "64px 1fr",
+                              gap: 12,
+                              alignItems: "center",
+                              borderRadius: 12,
+                              border:
+                                selectedMaterialPn === item.pn
+                                  ? `2px solid ${CAT_YELLOW}`
+                                  : "1px solid #e5e7eb",
+                              background: "white",
+                              padding: 12,
+                              cursor: "pointer",
+                              textAlign: "left",
+                            }}
                           >
-                            <div style={{ borderRadius: 10, overflow: "hidden", background: "#EEF2F7", width: 64, height: 64, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              {item.foto ? <img src={item.foto} alt={item.descricao} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "#6b7280" }}>📦</span>}
+                            <div
+                              style={{
+                                borderRadius: 10,
+                                overflow: "hidden",
+                                background: "#EEF2F7",
+                                width: 64,
+                                height: 64,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              {item.foto ? (
+                                <img
+                                  src={item.foto}
+                                  alt={item.descricao}
+                                  style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                              ) : (
+                                <span style={{ color: "#6b7280" }}>📦</span>
+                              )}
                             </div>
                             <div>
                               <div style={{ fontWeight: 700 }}>{item.descricao}</div>
-                              <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>PN: {item.pn}</div>
-                              <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>Loc.: {item.localizacao || "-"}</div>
+                              <div
+                                style={{
+                                  fontSize: 14,
+                                  color: "#6b7280",
+                                  marginTop: 2,
+                                }}
+                              >
+                                PN: {item.pn}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: 14,
+                                  color: "#6b7280",
+                                  marginTop: 2,
+                                }}
+                              >
+                                Loc.: {item.localizacao || "-"}
+                              </div>
                             </div>
                           </button>
                         ))}
-                        {!filteredMaterials.length && <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 30, textAlign: "center", color: "#64748b" }}>Nenhum material encontrado.</div>}
+                        {!filteredMaterials.length && (
+                          <div
+                            style={{
+                              border: "1px dashed #cbd5e1",
+                              borderRadius: 12,
+                              padding: 30,
+                              textAlign: "center",
+                              color: "#64748b",
+                            }}
+                          >
+                            Nenhum material encontrado.
+                          </div>
+                        )}
                       </div>
                     </div>
                   </Panel>
 
                   <Panel
                     title="Detalhes do material"
-                    right={selectedMaterial ? <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><ActionButton kind="secondary" onClick={() => handleEditMaterial(selectedMaterial)}>Editar material</ActionButton>{canAccessInventario && currentInventory ? <ActionButton kind="success" onClick={addSearchedItemToInventory}>Adicionar ao inventário</ActionButton> : null}</div> : null}
+                    right={
+                      selectedMaterial ? (
+                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                          <ActionButton
+                            kind="secondary"
+                            onClick={() => handleEditMaterial(selectedMaterial)}
+                          >
+                            Editar material
+                          </ActionButton>
+                          {canAccessInventario && currentInventory ? (
+                            <ActionButton kind="success" onClick={addSearchedItemToInventory}>
+                              Adicionar ao inventário
+                            </ActionButton>
+                          ) : null}
+                        </div>
+                      ) : null
+                    }
                   >
                     {selectedMaterial ? (
                       <div style={{ display: "grid", gap: 14 }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", gap: 18, alignItems: "start" }}>
-                          <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid #e5e7eb", background: "#EEF2F7", minHeight: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            {selectedMaterial.foto ? <img src={selectedMaterial.foto} alt={selectedMaterial.descricao} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ color: "#6b7280", fontSize: 48 }}>📦</span>}
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "280px 1fr",
+                            gap: 18,
+                            alignItems: "start",
+                          }}
+                        >
+                          <div
+                            style={{
+                              borderRadius: 12,
+                              overflow: "hidden",
+                              border: "1px solid #e5e7eb",
+                              background: "#EEF2F7",
+                              minHeight: 260,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {selectedMaterial.foto ? (
+                              <img
+                                src={selectedMaterial.foto}
+                                alt={selectedMaterial.descricao}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            ) : (
+                              <span style={{ color: "#6b7280", fontSize: 48 }}>📦</span>
+                            )}
                           </div>
                           <div style={{ display: "grid", gap: 12 }}>
                             <div>
-                              <div style={{ fontSize: 12, color: "#6b7280" }}>Descrição</div>
-                              <div style={{ fontWeight: 800, fontSize: 24, marginTop: 4 }}>{selectedMaterial.descricao}</div>
+                              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                                Descrição
+                              </div>
+                              <div
+                                style={{
+                                  fontWeight: 800,
+                                  fontSize: 24,
+                                  marginTop: 4,
+                                }}
+                              >
+                                {selectedMaterial.descricao}
+                              </div>
                             </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
-                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>PN</div><div style={{ fontWeight: 700, marginTop: 6 }}>{selectedMaterial.pn}</div></div>
-                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Quantidade</div><div style={{ fontWeight: 700, marginTop: 6 }}>{selectedMaterial.quantidade ?? 0}</div></div>
-                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Localização</div><div style={{ fontWeight: 700, marginTop: 6 }}>{selectedMaterial.localizacao || "-"}</div></div>
-                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Status</div><div style={{ marginTop: 6 }}><span style={{ ...statusStyle(selectedMaterial.status), padding: "6px 10px", borderRadius: 999, fontWeight: 700, fontSize: 12 }}>{selectedMaterial.status}</span></div></div>
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                                gap: 12,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  border: "1px solid #e5e7eb",
+                                  borderRadius: 10,
+                                  padding: 14,
+                                }}
+                              >
+                                <div style={{ fontSize: 12, color: "#6b7280" }}>PN</div>
+                                <div style={{ fontWeight: 700, marginTop: 6 }}>
+                                  {selectedMaterial.pn}
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  border: "1px solid #e5e7eb",
+                                  borderRadius: 10,
+                                  padding: 14,
+                                }}
+                              >
+                                <div style={{ fontSize: 12, color: "#6b7280" }}>
+                                  Quantidade
+                                </div>
+                                <div style={{ fontWeight: 700, marginTop: 6 }}>
+                                  {selectedMaterial.quantidade ?? 0}
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  border: "1px solid #e5e7eb",
+                                  borderRadius: 10,
+                                  padding: 14,
+                                }}
+                              >
+                                <div style={{ fontSize: 12, color: "#6b7280" }}>
+                                  Localização
+                                </div>
+                                <div style={{ fontWeight: 700, marginTop: 6 }}>
+                                  {selectedMaterial.localizacao || "-"}
+                                </div>
+                              </div>
+                              <div
+                                style={{
+                                  border: "1px solid #e5e7eb",
+                                  borderRadius: 10,
+                                  padding: 14,
+                                }}
+                              >
+                                <div style={{ fontSize: 12, color: "#6b7280" }}>
+                                  Status
+                                </div>
+                                <div style={{ marginTop: 6 }}>
+                                  <span
+                                    style={{
+                                      ...statusStyle(selectedMaterial.status),
+                                      padding: "6px 10px",
+                                      borderRadius: 999,
+                                      fontWeight: 700,
+                                      fontSize: 12,
+                                    }}
+                                  >
+                                    {selectedMaterial.status}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                            <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Observação</div><div style={{ marginTop: 6, fontWeight: 600 }}>{selectedMaterial.observacao || "Sem observações"}</div></div>
+                            <div
+                              style={{
+                                border: "1px solid #e5e7eb",
+                                borderRadius: 10,
+                                padding: 14,
+                              }}
+                            >
+                              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                                Observação
+                              </div>
+                              <div style={{ marginTop: 6, fontWeight: 600 }}>
+                                {selectedMaterial.observacao || "Sem observações"}
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -2161,75 +2499,268 @@ function handleMateriaisLogin() {
                               [...selectedMaterial.historico]
                                 .sort((a, b) => new Date(b.data) - new Date(a.data))
                                 .map((item) => (
-                                  <div key={item.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, background: "#fafafa" }}>
-                                    <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                                      <span style={{ ...movementTypeStyle(item.acao), padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 800 }}>{item.acao}</span>
+                                  <div
+                                    key={item.id}
+                                    style={{
+                                      border: "1px solid #e5e7eb",
+                                      borderRadius: 10,
+                                      padding: 14,
+                                      background: "#fafafa",
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        gap: 10,
+                                        alignItems: "center",
+                                        flexWrap: "wrap",
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          ...movementTypeStyle(item.acao),
+                                          padding: "4px 10px",
+                                          borderRadius: 999,
+                                          fontSize: 12,
+                                          fontWeight: 800,
+                                        }}
+                                      >
+                                        {item.acao}
+                                      </span>
                                       <div style={{ fontWeight: 700 }}>{item.usuarioNome}</div>
-                                      <div style={{ color: "#6b7280" }}>Matrícula: {item.usuarioMatricula || "-"}</div>
+                                      <div style={{ color: "#6b7280" }}>
+                                        Matrícula: {item.usuarioMatricula || "-"}
+                                      </div>
                                     </div>
-                                    <div style={{ marginTop: 8, color: "#6b7280" }}>{formatDateTime(item.data)}</div>
-                                    <div style={{ marginTop: 8, fontWeight: 600 }}>{item.detalhe || "-"}</div>
-                                    {item.observacao ? <div style={{ marginTop: 8, color: "#6b7280" }}>Obs.: {item.observacao}</div> : null}
-                                    {item.foto ? <div style={{ marginTop: 12, borderRadius: 10, overflow: "hidden", border: "1px solid #e5e7eb" }}><img src={item.foto} alt="Histórico" style={{ width: "100%", maxHeight: 220, objectFit: "cover" }} /></div> : null}
+                                    <div style={{ marginTop: 8, color: "#6b7280" }}>
+                                      {formatDateTime(item.data)}
+                                    </div>
+                                    <div style={{ marginTop: 8, fontWeight: 600 }}>
+                                      {item.detalhe || "-"}
+                                    </div>
+                                    {item.observacao ? (
+                                      <div style={{ marginTop: 8, color: "#6b7280" }}>
+                                        Obs.: {item.observacao}
+                                      </div>
+                                    ) : null}
+                                    {item.foto ? (
+                                      <div
+                                        style={{
+                                          marginTop: 12,
+                                          borderRadius: 10,
+                                          overflow: "hidden",
+                                          border: "1px solid #e5e7eb",
+                                        }}
+                                      >
+                                        <img
+                                          src={item.foto}
+                                          alt="Histórico"
+                                          style={{
+                                            width: "100%",
+                                            maxHeight: 220,
+                                            objectFit: "cover",
+                                          }}
+                                        />
+                                      </div>
+                                    ) : null}
                                   </div>
                                 ))
                             ) : (
-                              <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 24, textAlign: "center", color: "#64748b" }}>Nenhum histórico ainda.</div>
+                              <div
+                                style={{
+                                  border: "1px dashed #cbd5e1",
+                                  borderRadius: 12,
+                                  padding: 24,
+                                  textAlign: "center",
+                                  color: "#64748b",
+                                }}
+                              >
+                                Nenhum histórico ainda.
+                              </div>
                             )}
                           </div>
                         </Panel>
                       </div>
                     ) : (
-                      <div style={{ border: "1px dashed #cbd5e1", borderRadius: 14, background: "#f8fafc", padding: 40, textAlign: "center", color: "#64748b" }}>Selecione um material na lista para ver os detalhes.</div>
+                      <div
+                        style={{
+                          border: "1px dashed #cbd5e1",
+                          borderRadius: 14,
+                          background: "#f8fafc",
+                          padding: 40,
+                          textAlign: "center",
+                          color: "#64748b",
+                        }}
+                      >
+                        Selecione um material na lista para ver os detalhes.
+                      </div>
                     )}
                   </Panel>
                 </div>
               )}
 
-              {activeTab === "inventario" && !canAccessInventario && <LoginGate title="Área de Inventário" subtitle="Acesso restrito" onLogin={handleInventarioLogin} loginForm={inventarioLoginForm} setLoginForm={setInventarioLoginForm} errorMessage={inventarioLoginError} />}
+              {activeTab === "inventario" && !canAccessInventario && (
+                <LoginGate
+                  title="Área de Inventário"
+                  subtitle="Acesso restrito"
+                  onLogin={handleInventarioLogin}
+                  loginForm={inventarioLoginForm}
+                  setLoginForm={setInventarioLoginForm}
+                  errorMessage={inventarioLoginError}
+                />
+              )}
 
               {activeTab === "inventario" && canAccessInventario && (
                 <Panel
                   title="Controle de inventário"
-                  right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><div style={{ background: "#EEF2F7", borderRadius: 10, padding: "10px 14px", fontWeight: 700 }}>👤 {authState.inventario?.nome}</div><ActionButton kind="secondary" onClick={() => logoutArea("inventario")}>Sair</ActionButton></div>}
+                  right={
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <div
+                        style={{
+                          background: "#EEF2F7",
+                          borderRadius: 10,
+                          padding: "10px 14px",
+                          fontWeight: 700,
+                        }}
+                      >
+                        👤 {authState.inventario?.nome}
+                      </div>
+                      <ActionButton kind="secondary" onClick={() => logoutArea("inventario")}>
+                        Sair
+                      </ActionButton>
+                    </div>
+                  }
                 >
                   {!currentInventory ? (
                     <div style={{ display: "grid", gap: 18 }}>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12 }}>
-                        <TextInput value={newInventoryName} onChange={(e) => setNewInventoryName(e.target.value)} placeholder="Ex.: Inventário Abril 2026" style={{ minHeight: 52 }} />
-                        <ActionButton onClick={startNewInventory}>Criar inventário</ActionButton>
+                        <TextInput
+                          value={newInventoryName}
+                          onChange={(e) => setNewInventoryName(e.target.value)}
+                          placeholder="Ex.: Inventário Abril 2026"
+                          style={{ minHeight: 52 }}
+                        />
+                        <ActionButton onClick={startNewInventory}>
+                          Criar inventário
+                        </ActionButton>
                       </div>
                       <Panel title="Inventários salvos">
                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                          {inventories.length ? inventories.map((inv) => (
-                            <div key={inv.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                              <div>
-                                <div style={{ fontWeight: 800 }}>{inv.nome}</div>
-                                <div style={{ color: "#6b7280", marginTop: 4 }}>Criado por: {inv.criadoPor || "-"}</div>
-                                <div style={{ color: "#6b7280", marginTop: 4 }}>Atualizado em: {formatDateTime(inv.atualizadoEm)}</div>
-                                <div style={{ color: "#6b7280", marginTop: 4 }}>Itens: {(inv.itens || []).length}</div>
+                          {inventories.length ? (
+                            inventories.map((inv) => (
+                              <div
+                                key={inv.id}
+                                style={{
+                                  border: "1px solid #e5e7eb",
+                                  borderRadius: 10,
+                                  padding: 14,
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
+                                  gap: 12,
+                                  flexWrap: "wrap",
+                                }}
+                              >
+                                <div>
+                                  <div style={{ fontWeight: 800 }}>{inv.nome}</div>
+                                  <div style={{ color: "#6b7280", marginTop: 4 }}>
+                                    Criado por: {inv.criadoPor || "-"}
+                                  </div>
+                                  <div style={{ color: "#6b7280", marginTop: 4 }}>
+                                    Atualizado em: {formatDateTime(inv.atualizadoEm)}
+                                  </div>
+                                  <div style={{ color: "#6b7280", marginTop: 4 }}>
+                                    Itens: {(inv.itens || []).length}
+                                  </div>
+                                </div>
+                                <ActionButton kind="secondary" onClick={() => openInventory(inv)}>
+                                  Abrir inventário
+                                </ActionButton>
                               </div>
-                              <ActionButton kind="secondary" onClick={() => openInventory(inv)}>Abrir inventário</ActionButton>
+                            ))
+                          ) : (
+                            <div
+                              style={{
+                                border: "1px dashed #cbd5e1",
+                                borderRadius: 12,
+                                padding: 24,
+                                textAlign: "center",
+                                color: "#64748b",
+                              }}
+                            >
+                              Nenhum inventário salvo.
                             </div>
-                          )) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 24, textAlign: "center", color: "#64748b" }}>Nenhum inventário salvo.</div>}
+                          )}
                         </div>
                       </Panel>
                     </div>
                   ) : (
                     <div style={{ display: "grid", gap: 18 }}>
-                      <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 18, background: "#f8fafc" }}>
-                        <div style={{ fontSize: 12, color: "#6b7280" }}>Inventário atual</div>
-                        <div style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}>{currentInventory.nome}</div>
-                        <div style={{ color: "#6b7280", marginTop: 6 }}>Criado por {currentInventory.criadoPor} em {formatDateTime(currentInventory.criadoEm)}</div>
+                      <div
+                        style={{
+                          border: "1px solid #e5e7eb",
+                          borderRadius: 12,
+                          padding: 18,
+                          background: "#f8fafc",
+                        }}
+                      >
+                        <div style={{ fontSize: 12, color: "#6b7280" }}>
+                          Inventário atual
+                        </div>
+                        <div style={{ fontSize: 24, fontWeight: 800, marginTop: 4 }}>
+                          {currentInventory.nome}
+                        </div>
+                        <div style={{ color: "#6b7280", marginTop: 6 }}>
+                          Criado por {currentInventory.criadoPor} em{" "}
+                          {formatDateTime(currentInventory.criadoEm)}
+                        </div>
                       </div>
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <ActionButton onClick={addManualItemToInventory}>Adicionar item manual</ActionButton>
-                        <ActionButton kind="secondary" onClick={saveCurrentInventory}>Salvar inventário</ActionButton>
-                        <ActionButton kind="success" onClick={finishCurrentInventory}>Finalizar inventário</ActionButton>
-                        <ActionButton kind="danger" onClick={() => { const confirmed = window.confirm("Deseja fechar o inventário atual sem apagar os dados salvos?"); if (!confirmed) return; setCurrentInventory(null); }}>Fechar inventário</ActionButton>
+                        <ActionButton onClick={addManualItemToInventory}>
+                          Adicionar item manual
+                        </ActionButton>
+                        <ActionButton kind="secondary" onClick={saveCurrentInventory}>
+                          Salvar inventário
+                        </ActionButton>
+                        <ActionButton kind="success" onClick={finishCurrentInventory}>
+                          Finalizar inventário
+                        </ActionButton>
+                        <ActionButton
+                          kind="danger"
+                          onClick={() => {
+                            const confirmed = window.confirm(
+                              "Deseja fechar o inventário atual sem apagar os dados salvos?"
+                            );
+                            if (!confirmed) return;
+                            setCurrentInventory(null);
+                          }}
+                        >
+                          Fechar inventário
+                        </ActionButton>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                        {(currentInventory.itens || []).length ? currentInventory.itens.map((item) => <InventoryItemRow key={item.id} item={item} onChange={(nextItem) => updateInventoryItem(item.id, nextItem)} onRemove={() => removeInventoryItem(item.id)} />) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 12, padding: 30, textAlign: "center", color: "#64748b" }}>Nenhum item no inventário atual.</div>}
+                        {(currentInventory.itens || []).length ? (
+                          currentInventory.itens.map((item) => (
+                            <InventoryItemRow
+                              key={item.id}
+                              item={item}
+                              onChange={(nextItem) => updateInventoryItem(item.id, nextItem)}
+                              onRemove={() => removeInventoryItem(item.id)}
+                            />
+                          ))
+                        ) : (
+                          <div
+                            style={{
+                              border: "1px dashed #cbd5e1",
+                              borderRadius: 12,
+                              padding: 30,
+                              textAlign: "center",
+                              color: "#64748b",
+                            }}
+                          >
+                            Nenhum item no inventário atual.
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -2240,116 +2771,629 @@ function handleMateriaisLogin() {
                 <Panel title="Histórico geral de movimentações e ações">
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                     {materials.some((item) => (item.historico || []).length > 0) ? (
-                      materials.flatMap((material) => (material.historico || []).map((hist) => ({ ...hist, pn: material.pn, descricao: material.descricao }))).sort((a, b) => new Date(b.data) - new Date(a.data)).map((item) => (
-                        <div key={item.id} style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, background: "white" }}>
-                          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-                            <span style={{ ...movementTypeStyle(item.acao), padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 800 }}>{item.acao}</span>
-                            <strong>{item.descricao}</strong>
-                            <span style={{ color: "#6b7280" }}>PN: {item.pn}</span>
+                      materials
+                        .flatMap((material) =>
+                          (material.historico || []).map((hist) => ({
+                            ...hist,
+                            pn: material.pn,
+                            descricao: material.descricao,
+                          }))
+                        )
+                        .sort((a, b) => new Date(b.data) - new Date(a.data))
+                        .map((item) => (
+                          <div
+                            key={item.id}
+                            style={{
+                              border: "1px solid #e5e7eb",
+                              borderRadius: 10,
+                              padding: 14,
+                              background: "white",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: 10,
+                                alignItems: "center",
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  ...movementTypeStyle(item.acao),
+                                  padding: "4px 10px",
+                                  borderRadius: 999,
+                                  fontSize: 12,
+                                  fontWeight: 800,
+                                }}
+                              >
+                                {item.acao}
+                              </span>
+                              <strong>{item.descricao}</strong>
+                              <span style={{ color: "#6b7280" }}>PN: {item.pn}</span>
+                            </div>
+                            <div style={{ marginTop: 8, color: "#6b7280" }}>
+                              {formatDateTime(item.data)}
+                            </div>
+                            <div style={{ marginTop: 8, fontWeight: 600 }}>
+                              Usuário: {item.usuarioNome} | Matrícula:{" "}
+                              {item.usuarioMatricula || "-"}
+                            </div>
+                            <div style={{ marginTop: 8 }}>{item.detalhe || "-"}</div>
+                            {item.observacao ? (
+                              <div style={{ marginTop: 8, color: "#6b7280" }}>
+                                Obs.: {item.observacao}
+                              </div>
+                            ) : null}
                           </div>
-                          <div style={{ marginTop: 8, color: "#6b7280" }}>{formatDateTime(item.data)}</div>
-                          <div style={{ marginTop: 8, fontWeight: 600 }}>Usuário: {item.usuarioNome} | Matrícula: {item.usuarioMatricula || "-"}</div>
-                          <div style={{ marginTop: 8 }}>{item.detalhe || "-"}</div>
-                          {item.observacao ? <div style={{ marginTop: 8, color: "#6b7280" }}>Obs.: {item.observacao}</div> : null}
-                        </div>
-                      ))
-                    ) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 14, background: "#f8fafc", padding: 40, textAlign: "center", color: "#64748b" }}>Nenhum histórico registrado ainda.</div>}
+                        ))
+                    ) : (
+                      <div
+                        style={{
+                          border: "1px dashed #cbd5e1",
+                          borderRadius: 14,
+                          background: "#f8fafc",
+                          padding: 40,
+                          textAlign: "center",
+                          color: "#64748b",
+                        }}
+                      >
+                        Nenhum histórico registrado ainda.
+                      </div>
+                    )}
                   </div>
                 </Panel>
               )}
 
-              {activeTab === "cadastro" && !canAccessMateriais && <LoginGate title="Cadastro de materiais" subtitle="Login da área de materiais" onLogin={handleMateriaisLogin} loginForm={materiaisLoginForm} setLoginForm={setMateriaisLoginForm} errorMessage={materiaisLoginError} />}
+              {activeTab === "cadastro" && !canAccessMateriais && (
+                <LoginGate
+                  title="Cadastro de materiais"
+                  subtitle="Login da área de materiais"
+                  onLogin={handleMateriaisLogin}
+                  loginForm={materiaisLoginForm}
+                  setLoginForm={setMateriaisLoginForm}
+                  errorMessage={materiaisLoginError}
+                />
+              )}
 
               {activeTab === "cadastro" && canAccessMateriais && (
                 <div style={{ display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 20 }}>
                   <Panel
                     title={editingPn ? "Editar material" : "Cadastrar material"}
-                    right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><div style={{ background: "#EEF2F7", borderRadius: 10, padding: "10px 14px", fontWeight: 700 }}>👤 {authState.materiais?.nome}</div><ActionButton kind="secondary" onClick={() => logoutArea("materiais")}>Sair</ActionButton></div>}
+                    right={
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <div
+                          style={{
+                            background: "#EEF2F7",
+                            borderRadius: 10,
+                            padding: "10px 14px",
+                            fontWeight: 700,
+                          }}
+                        >
+                          👤 {authState.materiais?.nome}
+                        </div>
+                        <ActionButton kind="secondary" onClick={() => logoutArea("materiais")}>
+                          Sair
+                        </ActionButton>
+                      </div>
+                    }
                   >
                     <div style={{ display: "grid", gap: 14 }}>
-                      <div style={{ background: "#fff7cc", border: "1px solid #fde68a", borderRadius: 10, padding: 14 }}>
+                      <div
+                        style={{
+                          background: "#fff7cc",
+                          border: "1px solid #fde68a",
+                          borderRadius: 10,
+                          padding: 14,
+                        }}
+                      >
                         <div style={{ fontWeight: 800 }}>Modelo CSV para importar</div>
-                        <div style={{ color: "#6b7280", marginTop: 6 }}>Cabeçalho esperado:</div>
-                        <div style={{ marginTop: 8, fontFamily: "monospace", background: "white", borderRadius: 12, padding: 10, fontSize: 13 }}>{CSV_HEADERS_EXAMPLE}</div>
-                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 12 }}><input ref={csvInputRef} type="file" accept=".csv,text/csv" onChange={importCsvFile} /></div>
+                        <div style={{ color: "#6b7280", marginTop: 6 }}>
+                          Cabeçalho esperado:
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 8,
+                            fontFamily: "monospace",
+                            background: "white",
+                            borderRadius: 12,
+                            padding: 10,
+                            fontSize: 13,
+                          }}
+                        >
+                          {CSV_HEADERS_EXAMPLE}
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 10,
+                            flexWrap: "wrap",
+                            marginTop: 12,
+                          }}
+                        >
+                          <input
+                            ref={csvInputRef}
+                            type="file"
+                            accept=".csv,text/csv"
+                            onChange={importCsvFile}
+                          />
+                        </div>
                       </div>
-                      <Field label="PN"><TextInput value={newMaterial.pn} onChange={(e) => setNewMaterial((prev) => ({ ...prev, pn: e.target.value }))} placeholder="Digite o PN" /></Field>
-                      <Field label="Descrição"><TextInput value={newMaterial.descricao} onChange={(e) => setNewMaterial((prev) => ({ ...prev, descricao: e.target.value }))} placeholder="Descrição do material" /></Field>
+
+                      <Field label="PN">
+                        <TextInput
+                          value={newMaterial.pn}
+                          onChange={(e) =>
+                            setNewMaterial((prev) => ({ ...prev, pn: e.target.value }))
+                          }
+                          placeholder="Digite o PN"
+                        />
+                      </Field>
+
+                      <Field label="Descrição">
+                        <TextInput
+                          value={newMaterial.descricao}
+                          onChange={(e) =>
+                            setNewMaterial((prev) => ({
+                              ...prev,
+                              descricao: e.target.value,
+                            }))
+                          }
+                          placeholder="Descrição do material"
+                        />
+                      </Field>
+
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                        <Field label="Localização"><TextInput value={newMaterial.localizacao} onChange={(e) => setNewMaterial((prev) => ({ ...prev, localizacao: e.target.value }))} placeholder="01.02.03.04" /></Field>
-                        <Field label="Quantidade"><TextInput type="number" value={newMaterial.quantidade} onChange={(e) => setNewMaterial((prev) => ({ ...prev, quantidade: e.target.value }))} placeholder="0" /></Field>
+                        <Field label="Localização">
+                          <TextInput
+                            value={newMaterial.localizacao}
+                            onChange={(e) =>
+                              setNewMaterial((prev) => ({
+                                ...prev,
+                                localizacao: e.target.value,
+                              }))
+                            }
+                            placeholder="01.02.03.04"
+                          />
+                        </Field>
+                        <Field label="Quantidade">
+                          <TextInput
+                            type="number"
+                            value={newMaterial.quantidade}
+                            onChange={(e) =>
+                              setNewMaterial((prev) => ({
+                                ...prev,
+                                quantidade: e.target.value,
+                              }))
+                            }
+                            placeholder="0"
+                          />
+                        </Field>
                       </div>
-                      <Field label="Status"><select value={newMaterial.status} onChange={(e) => setNewMaterial((prev) => ({ ...prev, status: e.target.value }))} style={{ width: "100%", minHeight: 46, borderRadius: 10, border: "1px solid #d1d5db", padding: "12px 14px", fontSize: 16, outline: "none", background: "white" }}><option value="IDENTIFICADO">IDENTIFICADO</option><option value="SEM FOTO">SEM FOTO</option><option value="SEM LOCALIZAÇÃO">SEM LOCALIZAÇÃO</option><option value="COMPLETO">COMPLETO</option></select></Field>
-                      <Field label="Observação"><TextArea rows={3} value={newMaterial.observacao} onChange={(e) => setNewMaterial((prev) => ({ ...prev, observacao: e.target.value }))} placeholder="Observações" /></Field>
-                      <InventoryPhotoInput label="Foto do material" foto={newMaterial.foto} onChange={(foto) => setNewMaterial((prev) => ({ ...prev, foto }))} />
+
+                      <Field label="Status">
+                        <select
+                          value={newMaterial.status}
+                          onChange={(e) =>
+                            setNewMaterial((prev) => ({ ...prev, status: e.target.value }))
+                          }
+                          style={{
+                            width: "100%",
+                            minHeight: 46,
+                            borderRadius: 10,
+                            border: "1px solid #d1d5db",
+                            padding: "12px 14px",
+                            fontSize: 16,
+                            outline: "none",
+                            background: "white",
+                          }}
+                        >
+                          <option value="IDENTIFICADO">IDENTIFICADO</option>
+                          <option value="SEM FOTO">SEM FOTO</option>
+                          <option value="SEM LOCALIZAÇÃO">SEM LOCALIZAÇÃO</option>
+                          <option value="COMPLETO">COMPLETO</option>
+                        </select>
+                      </Field>
+
+                      <Field label="Observação">
+                        <TextArea
+                          rows={3}
+                          value={newMaterial.observacao}
+                          onChange={(e) =>
+                            setNewMaterial((prev) => ({
+                              ...prev,
+                              observacao: e.target.value,
+                            }))
+                          }
+                          placeholder="Observações"
+                        />
+                      </Field>
+
+                      <InventoryPhotoInput
+                        label="Foto do material"
+                        foto={newMaterial.foto}
+                        onChange={(foto) =>
+                          setNewMaterial((prev) => ({ ...prev, foto }))
+                        }
+                      />
+
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <ActionButton onClick={saveMaterial}>{editingPn ? "Atualizar material" : "Salvar material"}</ActionButton>
-                        <ActionButton kind="secondary" onClick={resetMaterialForm}>Limpar</ActionButton>
+                        <ActionButton onClick={saveMaterial}>
+                          {editingPn ? "Atualizar material" : "Salvar material"}
+                        </ActionButton>
+                        <ActionButton kind="secondary" onClick={resetMaterialForm}>
+                          Limpar
+                        </ActionButton>
                       </div>
                     </div>
                   </Panel>
 
                   <Panel title="Lista de materiais cadastrados">
                     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      {materials.length ? materials.map((item) => <MaterialListItem key={item.pn} item={item} onEdit={handleEditMaterial} onDelete={deleteMaterial} />) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 14, background: "#f8fafc", padding: 40, textAlign: "center", color: "#64748b" }}>Nenhum material cadastrado ainda.</div>}
+                      {materials.length ? (
+                        materials.map((item) => (
+                          <MaterialListItem
+                            key={item.pn}
+                            item={item}
+                            onEdit={handleEditMaterial}
+                            onDelete={deleteMaterial}
+                          />
+                        ))
+                      ) : (
+                        <div
+                          style={{
+                            border: "1px dashed #cbd5e1",
+                            borderRadius: 14,
+                            background: "#f8fafc",
+                            padding: 40,
+                            textAlign: "center",
+                            color: "#64748b",
+                          }}
+                        >
+                          Nenhum material cadastrado ainda.
+                        </div>
+                      )}
                     </div>
                   </Panel>
                 </div>
               )}
 
-              {activeTab === "movimentacao" && !canAccessMateriais && <LoginGate title="Entrada e Saída" subtitle="Login da área de materiais" onLogin={handleMateriaisLogin} loginForm={materiaisLoginForm} setLoginForm={setMateriaisLoginForm} errorMessage={materiaisLoginError} />}
+              {activeTab === "movimentacao" && !canAccessMateriais && (
+                <LoginGate
+                  title="Entrada e Saída"
+                  subtitle="Login da área de materiais"
+                  onLogin={handleMateriaisLogin}
+                  loginForm={materiaisLoginForm}
+                  setLoginForm={setMateriaisLoginForm}
+                  errorMessage={materiaisLoginError}
+                />
+              )}
 
               {activeTab === "movimentacao" && canAccessMateriais && (
                 <div style={{ display: "grid", gridTemplateColumns: "0.95fr 1.05fr", gap: 20 }}>
                   <Panel
                     title="Registrar entrada ou saída"
-                    right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><div style={{ background: "#EEF2F7", borderRadius: 10, padding: "10px 14px", fontWeight: 700 }}>👤 {authState.materiais?.nome}</div><ActionButton kind="secondary" onClick={() => logoutArea("materiais")}>Sair</ActionButton></div>}
+                    right={
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <div
+                          style={{
+                            background: "#EEF2F7",
+                            borderRadius: 10,
+                            padding: "10px 14px",
+                            fontWeight: 700,
+                          }}
+                        >
+                          👤 {authState.materiais?.nome}
+                        </div>
+                        <ActionButton kind="secondary" onClick={() => logoutArea("materiais")}>
+                          Sair
+                        </ActionButton>
+                      </div>
+                    }
                   >
                     <div style={{ display: "grid", gap: 14 }}>
-                      <Field label="Tipo da movimentação"><select value={movementForm.tipo} onChange={(e) => setMovementForm((prev) => ({ ...prev, tipo: e.target.value }))} style={{ width: "100%", minHeight: 46, borderRadius: 10, border: "1px solid #d1d5db", padding: "12px 14px", fontSize: 16, outline: "none", background: "white" }}><option value="SAÍDA">SAÍDA</option><option value="ENTRADA">ENTRADA</option></select></Field>
-                      <Field label="PN"><TextInput value={movementForm.pn} onChange={(e) => setMovementForm((prev) => ({ ...prev, pn: e.target.value }))} placeholder="Digite o PN" /></Field>
-                      {matchedMovementMaterial ? <div style={{ border: "1px solid #e5e7eb", borderRadius: 10, padding: 14, background: "#f8fafc" }}><div style={{ fontWeight: 800 }}>{matchedMovementMaterial.descricao}</div><div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>PN: {matchedMovementMaterial.pn}</div><div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>Localização: {matchedMovementMaterial.localizacao || "Não informada"}</div><div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>Quantidade atual cadastrada: {matchedMovementMaterial.quantidade ?? 0}</div></div> : null}
+                      <Field label="Tipo da movimentação">
+                        <select
+                          value={movementForm.tipo}
+                          onChange={(e) =>
+                            setMovementForm((prev) => ({ ...prev, tipo: e.target.value }))
+                          }
+                          style={{
+                            width: "100%",
+                            minHeight: 46,
+                            borderRadius: 10,
+                            border: "1px solid #d1d5db",
+                            padding: "12px 14px",
+                            fontSize: 16,
+                            outline: "none",
+                            background: "white",
+                          }}
+                        >
+                          <option value="SAÍDA">SAÍDA</option>
+                          <option value="ENTRADA">ENTRADA</option>
+                        </select>
+                      </Field>
+
+                      <Field label="PN">
+                        <TextInput
+                          value={movementForm.pn}
+                          onChange={(e) =>
+                            setMovementForm((prev) => ({ ...prev, pn: e.target.value }))
+                          }
+                          placeholder="Digite o PN"
+                        />
+                      </Field>
+
+                      {matchedMovementMaterial ? (
+                        <div
+                          style={{
+                            border: "1px solid #e5e7eb",
+                            borderRadius: 10,
+                            padding: 14,
+                            background: "#f8fafc",
+                          }}
+                        >
+                          <div style={{ fontWeight: 800 }}>
+                            {matchedMovementMaterial.descricao}
+                          </div>
+                          <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>
+                            PN: {matchedMovementMaterial.pn}
+                          </div>
+                          <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>
+                            Localização:{" "}
+                            {matchedMovementMaterial.localizacao || "Não informada"}
+                          </div>
+                          <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>
+                            Quantidade atual cadastrada:{" "}
+                            {matchedMovementMaterial.quantidade ?? 0}
+                          </div>
+                        </div>
+                      ) : null}
+
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                        <Field label="Quantidade"><TextInput type="number" value={movementForm.quantidade} onChange={(e) => setMovementForm((prev) => ({ ...prev, quantidade: e.target.value }))} placeholder="0" /></Field>
-                        <Field label="Data e hora"><TextInput type="datetime-local" value={movementForm.data} onChange={(e) => setMovementForm((prev) => ({ ...prev, data: e.target.value }))} /></Field>
+                        <Field label="Quantidade">
+                          <TextInput
+                            type="number"
+                            value={movementForm.quantidade}
+                            onChange={(e) =>
+                              setMovementForm((prev) => ({
+                                ...prev,
+                                quantidade: e.target.value,
+                              }))
+                            }
+                            placeholder="0"
+                          />
+                        </Field>
+                        <Field label="Data e hora">
+                          <TextInput
+                            type="datetime-local"
+                            value={movementForm.data}
+                            onChange={(e) =>
+                              setMovementForm((prev) => ({ ...prev, data: e.target.value }))
+                            }
+                          />
+                        </Field>
                       </div>
-                      <Field label="Observação"><TextArea rows={3} value={movementForm.observacao} onChange={(e) => setMovementForm((prev) => ({ ...prev, observacao: e.target.value }))} placeholder="Ex.: faturado, reposição, devolução..." /></Field>
-                      <InventoryPhotoInput label="Foto da movimentação" foto={movementForm.foto} onChange={(foto) => setMovementForm((prev) => ({ ...prev, foto }))} />
+
+                      <Field label="Observação">
+                        <TextArea
+                          rows={3}
+                          value={movementForm.observacao}
+                          onChange={(e) =>
+                            setMovementForm((prev) => ({
+                              ...prev,
+                              observacao: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex.: faturado, reposição, devolução..."
+                        />
+                      </Field>
+
+                      <InventoryPhotoInput
+                        label="Foto da movimentação"
+                        foto={movementForm.foto}
+                        onChange={(foto) =>
+                          setMovementForm((prev) => ({ ...prev, foto }))
+                        }
+                      />
+
                       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                        <ActionButton onClick={registerMovement}>Salvar movimentação</ActionButton>
-                        <ActionButton kind="secondary" onClick={() => setMovementForm({ tipo: "SAÍDA", pn: "", quantidade: "", observacao: "", foto: "", data: new Date().toISOString().slice(0, 16) })}>Limpar</ActionButton>
+                        <ActionButton onClick={registerMovement}>
+                          Salvar movimentação
+                        </ActionButton>
+                        <ActionButton
+                          kind="secondary"
+                          onClick={() =>
+                            setMovementForm({
+                              tipo: "SAÍDA",
+                              pn: "",
+                              quantidade: "",
+                              observacao: "",
+                              foto: "",
+                              data: new Date().toISOString().slice(0, 16),
+                            })
+                          }
+                        >
+                          Limpar
+                        </ActionButton>
                       </div>
                     </div>
                   </Panel>
 
                   <Panel
                     title="Movimentações do mês"
-                    right={<div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><select value={movementMonthFilter} onChange={(e) => setMovementMonthFilter(e.target.value)} style={{ minHeight: 44, borderRadius: 14, border: "1px solid #d1d5db", padding: "10px 12px", background: "white" }}>{movementMonths.map((key) => <option key={key} value={key}>{formatMonthLabel(key)}</option>)}</select><ActionButton kind="secondary" onClick={exportMovementsCsv}>Exportar CSV</ActionButton></div>}
+                    right={
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <select
+                          value={movementMonthFilter}
+                          onChange={(e) => setMovementMonthFilter(e.target.value)}
+                          style={{
+                            minHeight: 44,
+                            borderRadius: 14,
+                            border: "1px solid #d1d5db",
+                            padding: "10px 12px",
+                            background: "white",
+                          }}
+                        >
+                          {movementMonths.map((key) => (
+                            <option key={key} value={key}>
+                              {formatMonthLabel(key)}
+                            </option>
+                          ))}
+                        </select>
+                        <ActionButton kind="secondary" onClick={exportMovementsCsv}>
+                          Exportar CSV
+                        </ActionButton>
+                      </div>
+                    }
                   >
                     {filteredMovements.length ? (
                       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                        {filteredMovements.sort((a, b) => new Date(b.data) - new Date(a.data)).map((item) => (
-                          <div key={item.id} style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 16, background: "white" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-                              <div>
-                                <div style={{ fontWeight: 800, fontSize: 18 }}>{item.descricao}</div>
-                                <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>PN: {item.pn}</div>
+                        {filteredMovements
+                          .sort((a, b) => new Date(b.data) - new Date(a.data))
+                          .map((item) => (
+                            <div
+                              key={item.id}
+                              style={{
+                                border: "1px solid #e5e7eb",
+                                borderRadius: 12,
+                                padding: 16,
+                                background: "white",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  gap: 12,
+                                  flexWrap: "wrap",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <div>
+                                  <div style={{ fontWeight: 800, fontSize: 18 }}>
+                                    {item.descricao}
+                                  </div>
+                                  <div style={{ fontSize: 14, color: "#6b7280", marginTop: 4 }}>
+                                    PN: {item.pn}
+                                  </div>
+                                </div>
+                                <span
+                                  style={{
+                                    ...movementTypeStyle(item.tipo),
+                                    padding: "6px 12px",
+                                    borderRadius: 999,
+                                    fontWeight: 800,
+                                    fontSize: 12,
+                                  }}
+                                >
+                                  {item.tipo}
+                                </span>
                               </div>
-                              <span style={{ ...movementTypeStyle(item.tipo), padding: "6px 12px", borderRadius: 999, fontWeight: 800, fontSize: 12 }}>{item.tipo}</span>
+                              <div
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                                  gap: 12,
+                                  marginTop: 12,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: 14,
+                                    padding: 12,
+                                  }}
+                                >
+                                  <div style={{ fontSize: 12, color: "#6b7280" }}>
+                                    Quantidade
+                                  </div>
+                                  <div style={{ fontWeight: 700, marginTop: 6 }}>
+                                    {item.quantidade}
+                                  </div>
+                                </div>
+                                <div
+                                  style={{
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: 14,
+                                    padding: 12,
+                                  }}
+                                >
+                                  <div style={{ fontSize: 12, color: "#6b7280" }}>
+                                    Usuário
+                                  </div>
+                                  <div style={{ fontWeight: 700, marginTop: 6 }}>
+                                    {item.usuarioNome}
+                                  </div>
+                                </div>
+                                <div
+                                  style={{
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: 14,
+                                    padding: 12,
+                                  }}
+                                >
+                                  <div style={{ fontSize: 12, color: "#6b7280" }}>Antes</div>
+                                  <div style={{ fontWeight: 700, marginTop: 6 }}>
+                                    {item.quantidadeAntes}
+                                  </div>
+                                </div>
+                                <div
+                                  style={{
+                                    border: "1px solid #e5e7eb",
+                                    borderRadius: 14,
+                                    padding: 12,
+                                  }}
+                                >
+                                  <div style={{ fontSize: 12, color: "#6b7280" }}>Depois</div>
+                                  <div style={{ fontWeight: 700, marginTop: 6 }}>
+                                    {item.quantidadeDepois}
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{ fontSize: 14, color: "#6b7280", marginTop: 12 }}>
+                                {formatDateTime(item.data)}
+                              </div>
+                              <div style={{ fontSize: 14, color: "#6b7280", marginTop: 6 }}>
+                                {item.observacao || "Sem observações"}
+                              </div>
+                              {item.foto ? (
+                                <div
+                                  style={{
+                                    marginTop: 12,
+                                    borderRadius: 10,
+                                    overflow: "hidden",
+                                    border: "1px solid #e5e7eb",
+                                  }}
+                                >
+                                  <img
+                                    src={item.foto}
+                                    alt="Movimentação"
+                                    style={{
+                                      width: "100%",
+                                      maxHeight: 240,
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                </div>
+                              ) : null}
                             </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12, marginTop: 12 }}>
-                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: 12 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Quantidade</div><div style={{ fontWeight: 700, marginTop: 6 }}>{item.quantidade}</div></div>
-                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: 12 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Usuário</div><div style={{ fontWeight: 700, marginTop: 6 }}>{item.usuarioNome}</div></div>
-                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: 12 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Antes</div><div style={{ fontWeight: 700, marginTop: 6 }}>{item.quantidadeAntes}</div></div>
-                              <div style={{ border: "1px solid #e5e7eb", borderRadius: 14, padding: 12 }}><div style={{ fontSize: 12, color: "#6b7280" }}>Depois</div><div style={{ fontWeight: 700, marginTop: 6 }}>{item.quantidadeDepois}</div></div>
-                            </div>
-                            <div style={{ fontSize: 14, color: "#6b7280", marginTop: 12 }}>{formatDateTime(item.data)}</div>
-                            <div style={{ fontSize: 14, color: "#6b7280", marginTop: 6 }}>{item.observacao || "Sem observações"}</div>
-                            {item.foto ? <div style={{ marginTop: 12, borderRadius: 10, overflow: "hidden", border: "1px solid #e5e7eb" }}><img src={item.foto} alt="Movimentação" style={{ width: "100%", maxHeight: 240, objectFit: "cover" }} /></div> : null}
-                          </div>
-                        ))}
+                          ))}
                       </div>
-                    ) : <div style={{ border: "1px dashed #cbd5e1", borderRadius: 24, background: "#f8fafc", padding: 40, textAlign: "center", color: "#64748b" }}>Nenhuma movimentação registrada nesse mês.</div>}
+                    ) : (
+                      <div
+                        style={{
+                          border: "1px dashed #cbd5e1",
+                          borderRadius: 24,
+                          background: "#f8fafc",
+                          padding: 40,
+                          textAlign: "center",
+                          color: "#64748b",
+                        }}
+                      >
+                        Nenhuma movimentação registrada nesse mês.
+                      </div>
+                    )}
                   </Panel>
                 </div>
               )}
