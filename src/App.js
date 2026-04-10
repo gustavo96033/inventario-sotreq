@@ -1268,33 +1268,6 @@ const [materiaisLoginError, setMateriaisLoginError] = useState("");
     }
   }
 
-  async function handleInventarioLogin() {
-  if (!supabase) return;
-
-  setAuthLoading(true);
-  setInventarioLoginError("");
-
-  try {
-    const { error } = await supabase.auth.signInWithPassword({
-      email: inventarioLoginForm.email,
-      password: inventarioLoginForm.senha,
-    });
-
-    if (error) throw error;
-    setInventarioLoginForm({ email: "", senha: "" });
-  } catch (error) {
-    setInventarioLoginError(error.message || "Erro ao fazer login.");
-  } finally {
-    setAuthLoading(false);
-  }
-}
-    );
-
-    if (!found) {
-      setInventarioLoginError("Matrícula ou senha inválida.");
-      return;
-    }
-
     setInventarioLoginError("");
     setAuthState((prev) => ({ ...prev, inventario: found }));
     setInventarioLoginForm({ matricula: "", senha: "" });
