@@ -1232,6 +1232,10 @@ async function handleLogin() {
     setLoginError(error.message);
   }
 }
+
+async function handleLogout() {
+  await supabase.auth.signOut();
+}
   
   async function saveMaterial() {
     if (!supabase) return;
