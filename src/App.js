@@ -1244,7 +1244,63 @@ const [materiaisLoginError, setMateriaisLoginError] = useState("");
   }
 
   async function deleteMaterial(pn) {
-    if (!supabase) return;
+  if (!supabase) return;
+
+  const confirmed = window.confirm(`Deseja excluir o material ${pn}?`);
+  if (!confirmed) return;
+
+  try {
+    const { error: historyError } = await supabase
+      .from("material_history")
+      .delete()
+      .eq("material_pn", pn);
+    if (historyError) throw historyError;
+
+    const { error } = await supabase.from("materials").delete().eq("pn", pn);
+    if (error) throw error;
+
+    if (selectedMaterialPn === pn) setSelectedMaterialPn("");
+    if (editingPn === pn) resetMaterialForm();
+    await loadCloudData();
+  } catch (error) {
+    console.error(error);
+    window.alert(error.message || "Erro ao excluir material.");
+  }
+}
+
+function handleInventarioLogin() {
+  const found = ACCESS_CONFIG.inventario.find(
+    (item) =>
+      item.matricula === inventarioLoginForm.matricula &&
+      item.senha === inventarioLoginForm.senha
+  );
+
+  if (!found) {
+    setInventarioLoginError("Matrícula ou senha inválida.");
+    return;
+  }
+
+  setInventarioLoginError("");
+  setAuthState((prev) => ({ ...prev, inventario: found }));
+  setInventarioLoginForm({ matricula: "", senha: "" });
+}
+
+function handleMateriaisLogin() {
+  const found = ACCESS_CONFIG.materiais.find(
+    (item) =>
+      item.matricula === materiaisLoginForm.matricula &&
+      item.senha === materiaisLoginForm.senha
+  );
+
+  if (!found) {
+    setMateriaisLoginError("Matrícula ou senha inválida.");
+    return;
+  }
+
+  setMateriaisLoginError("");
+  setAuthState((prev) => ({ ...prev, materiais: found }));
+  setMateriaisLoginForm({ matricula: "", senha: "" });
+}
 
     const confirmed = window.confirm(`Deseja excluir o material ${pn}?`);
     if (!confirmed) return;
