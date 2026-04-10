@@ -979,19 +979,15 @@ export default function App() {
   const [editingPn, setEditingPn] = useState("");
 
   const [inventarioLoginForm, setInventarioLoginForm] = useState({
-  email: "",
+  matricula: "",
   senha: "",
 });
 const [materiaisLoginForm, setMateriaisLoginForm] = useState({
-  email: "",
+  matricula: "",
   senha: "",
 });
 const [inventarioLoginError, setInventarioLoginError] = useState("");
 const [materiaisLoginError, setMateriaisLoginError] = useState("");
-const [authLoading, setAuthLoading] = useState(false);
-const [sessionUser, setSessionUser] = useState(null);
-const [profile, setProfile] = useState(null);
-
   const [newMaterial, setNewMaterial] = useState({
     pn: "",
     descricao: "",
