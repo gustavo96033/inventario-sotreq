@@ -868,6 +868,17 @@ function buildMaterialsWithHistory(materialRows, historyRows) {
   }));
 }
 
+function formatRoleLabel(role) {
+  const normalized = String(role || "").toLowerCase();
+
+  if (normalized === "owner") return "Proprietário";
+  if (normalized === "admin") return "Administrador";
+  if (normalized === "operator") return "Operador";
+  if (normalized === "viewer") return "Acesso básico";
+
+  return "Usuário";
+}
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -1043,7 +1054,7 @@ export default function App() {
         console.error(profileError);
         setProfile(null);
         setAuthState({ inventario: null, materiais: null });
-        setCloudError("Perfil corporativo não localizado. Verifique o vínculo do usuário com a empresa.");
+        setCloudError("Acesso pendente de liberação pela empresa. Seu usuário já entrou na plataforma, mas ainda não foi vinculado a uma empresa ou perfil ativo.");
         setIsLoadingCloud(false);
         setLoadingAuth(false);
         return;
@@ -1813,7 +1824,7 @@ async function handleLogin() {
                   <TextInput
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="exemplo@empresa.com ou 0001"
+                    placeholder="Digite seu email corporativo ou matrícula"
                     style={{ minHeight: 52 }}
                   />
                 </Field>
@@ -2111,7 +2122,7 @@ async function handleLogin() {
                 {currentUserName}
               </div>
               <div style={{ marginTop: 4, color: "#CBD5E1", fontSize: 12 }}>
-                {profile?.role || "viewer"}
+                {formatRoleLabel(profile?.role || "viewer")}
               </div>
             </div>
 
