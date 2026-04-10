@@ -1134,6 +1134,23 @@ const [loginError, setLoginError] = useState("");
     loadCloudData();
   }, []);
 
+useEffect(() => {
+  if (!supabase) return;
+
+  supabase.auth.getUser().then(({ data }) => {
+    setUser(data?.user || null);
+    setLoadingAuth(false);
+  });
+
+  const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user || null);
+  });
+
+  return () => {
+    listener.subscription.unsubscribe();
+  };
+}, []);
+  
   const canAccessInventario = Boolean(authState.inventario);
   const canAccessMateriais = Boolean(authState.materiais);
 
