@@ -701,7 +701,7 @@ function MiningHero({
         >
           <div>
             <h1 style={{ margin: 0, fontSize: 34, lineHeight: 1.1 }}>
-              Plataforma Corporativa de Materiais
+              Plataforma corporativa de operações e materiais
             </h1>
             <div
               style={{
@@ -712,9 +712,8 @@ function MiningHero({
                 lineHeight: 1.6,
               }}
             >
-              Gestão centralizada de cadastro, inventário, rastreabilidade por
-              usuário e movimentações operacionais com histórico fotográfico e
-              controle quantitativo.
+              Gerencie cadastro, inventários, movimentações e rastreabilidade da
+              operação com mais controle, padronização e visibilidade.
             </div>
 
             <div
@@ -789,23 +788,10 @@ function MiningHero({
                 }}
               >
                 <div style={{ color: "#9ca3af", fontSize: 12 }}>
-                  Foco atual
+                  Foco do período
                 </div>
                 <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
-                  Movimentações operacionais
-                </div>
-              </div>
-
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  borderRadius: 10,
-                  padding: 14,
-                }}
-              >
-                <div style={{ color: "#9ca3af", fontSize: 12 }}>Controle</div>
-                <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
-                  Auditoria por usuário e evidência
+                  Operações e movimentações
                 </div>
               </div>
 
@@ -816,9 +802,22 @@ function MiningHero({
                   padding: 14,
                 }}
               >
-                <div style={{ color: "#9ca3af", fontSize: 12 }}>Sistema</div>
+                <div style={{ color: "#9ca3af", fontSize: 12 }}>Governança</div>
                 <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
-                  Governança de materiais
+                  Rastreabilidade e auditoria
+                </div>
+              </div>
+
+              <div
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  borderRadius: 10,
+                  padding: 14,
+                }}
+              >
+                <div style={{ color: "#9ca3af", fontSize: 12 }}>Visão executiva</div>
+                <div style={{ marginTop: 6, fontWeight: 800, fontSize: 18 }}>
+                  Controle centralizado da operação
                 </div>
               </div>
             </div>
@@ -1044,7 +1043,7 @@ export default function App() {
         console.error(profileError);
         setProfile(null);
         setAuthState({ inventario: null, materiais: null });
-        setCloudError("Perfil do usuário não encontrado. Verifique o cadastro da empresa.");
+        setCloudError("Perfil corporativo não localizado. Verifique o vínculo do usuário com a empresa.");
         setIsLoadingCloud(false);
         setLoadingAuth(false);
         return;
@@ -1769,22 +1768,22 @@ async function handleLogin() {
                   fontSize: 13,
                 }}
               >
-                ORBISYS • LOGISTICS PLATFORM
+                ORBISYS • ACESSO CORPORATIVO
               </div>
               <h1 style={{ margin: "22px 0 12px 0", fontSize: 42, lineHeight: 1.05 }}>
-                Controle de estoque e inventário com cara de sistema grande.
+                Gestão operacional com controle, rastreabilidade e padrão corporativo.
               </h1>
               <div style={{ color: "#DBEAFE", fontSize: 16, lineHeight: 1.7, maxWidth: 520 }}>
-                Acesse sua operação com segurança e gerencie materiais, movimentações,
-                inventários e histórico em uma única plataforma.
+                Entre no ambiente da sua empresa para acompanhar materiais, inventários,
+                movimentações e histórico operacional.
               </div>
             </div>
 
             <div style={{ display: "grid", gap: 12 }}>
               {[
-                "Login único por empresa",
+                "Login corporativo por empresa",
                 "Rastreabilidade por usuário",
-                "Inventário e movimentações em tempo real",
+                "Operação e inventário em tempo real",
               ].map((item) => (
                 <div
                   key={item}
@@ -1806,7 +1805,7 @@ async function handleLogin() {
             <div>
               <div style={{ fontSize: 28, fontWeight: 900, color: "#0F172A" }}>Entrar</div>
               <div style={{ marginTop: 8, color: "#64748B", lineHeight: 1.6 }}>
-                Use seu email corporativo ou matrícula para acessar a plataforma.
+                Entre com sua credencial corporativa para acessar o ambiente da empresa.
               </div>
 
               <div style={{ marginTop: 24, display: "grid", gap: 14 }}>
@@ -2179,7 +2178,7 @@ async function handleLogin() {
                     border: "1px solid rgba(191,219,254,0.12)",
                   }}
                 >
-                  OPERATIONS CONTROL PLATFORM
+                  PLATAFORMA DE CONTROLE OPERACIONAL
                 </div>
                 <h1
                   style={{
@@ -2188,7 +2187,7 @@ async function handleLogin() {
                     lineHeight: 1.05,
                   }}
                 >
-                  Gestão operacional com rastreabilidade e controle mestre
+                  Visão geral da operação com controle e rastreabilidade
                 </h1>
                 <div
                   style={{
@@ -2197,9 +2196,8 @@ async function handleLogin() {
                     maxWidth: 820,
                   }}
                 >
-                  Plataforma para cadastro mestre de materiais, consulta operacional,
-                  inventário físico, auditoria de alterações e movimentações mensais
-                  com identificação por usuário.
+                  Centralize materiais, inventários, movimentações e histórico operacional
+                  em um ambiente único, com segurança e visibilidade gerencial.
                 </div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
                   {[
@@ -2788,7 +2786,7 @@ async function handleLogin() {
 
               {activeTab === "inventario" && canAccessInventario && (
                 <Panel
-                  title="Controle de inventário"
+                  title="Governança de inventário"
                   right={
                     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                       <div
