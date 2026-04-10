@@ -1220,6 +1220,19 @@ useEffect(() => {
     });
   }
 
+async function handleLogin() {
+  setLoginError("");
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: loginEmail,
+    password: loginPassword,
+  });
+
+  if (error) {
+    setLoginError(error.message);
+  }
+}
+  
   async function saveMaterial() {
     if (!supabase) return;
 
